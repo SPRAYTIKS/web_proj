@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="album-container">
+    <h2>Альбомы</h2>
+    <div class="album-grid">
+      {% for image in images %}
+        <div class="album-item">
+          <a href="/album/photo">
+            <img src="{{ url_for('static', filename='image/' + image.filename) }}" alt="Фотография">
+          </a>
+          <p>{{ image.description }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+{% endblock %}
