@@ -1,0 +1,52 @@
+.login {
+    margin: auto;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    border-radius: 100px;
+    padding: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+}
+
+.text-log {
+    color: rgb(248, 195, 1);
+    font-family: century;
+    font-weight: bold;
+    font-size: 21px;
+}
+
+.image_log {
+    max-width: 50%;
+    width: 50vw;
+    margin-bottom: 8%;
+}
+
+.a_logo {
+    margin-left: 25%;
+}
+
+.danger_text {
+    color: rgb(215, 95, 107);
+}
+
+.compete_text {
+    color: rgb(177, 250, 97);
+}
+
+.invisible_text {
+    color: rgb(26, 29, 31);
+}
+
+.check_margin {
+    margin-left: 30%;
+}
+
+a, but {
+    text-decoration: none;
+}
+
+.gender {
+    font-family: century;
+    font-weight: bold;
+    font-size: 15px;
+}
