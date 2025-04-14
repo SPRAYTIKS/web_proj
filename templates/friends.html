@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    {% for user in users %}
+        {% set id = user.id.__str__()%}
+        <button class="logo-button-avatar" onclick="location.href='/profile/{{ id }}'"
+                        style="width: 60%; height: 90px; background-color: #212529;
+                        border-radius: 10px; display: block; margin: 0 auto; margin-bottom: 10px;">
+            <div style="float:left; width: 100%;">
+            <img src="./../static/users/{{ id }}/avatar.png" alt="Логотип" class="avatar" style="width: 75px;
+                    margin-left: 20px; float: left;">
+            <span style="font-size:1.3rem; font-weight:500; color:#f8c301; margin-top: 22px;
+                    float: left; margin-left: 10px;">{{ user.name }} {{user.surname }}</span>
+            <img src="./../static/image/design_image/add_friends.png" alt="Логотип" class="avatar" style="width: 40px;
+                    height: auto; border: none; border-radius: 1px; float: right; margin-top: 15px; margin-right: 20px;">
+            </div>
+        </button>
+    {% endfor %}
+{% endblock %}

@@ -18,6 +18,7 @@ class User(SqlAlchemyBase, UserMixin):
     date_of_birth = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
     gender = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=False, unique=True)
+    friends = sqlalchemy.Column(sqlalchemy.String, default='')
     status = sqlalchemy.Column(sqlalchemy.String, default='default_user')
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     register_date = sqlalchemy.Column(sqlalchemy.DateTime, default=dt.datetime.now)

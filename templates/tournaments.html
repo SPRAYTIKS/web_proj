@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tournament-container">
+  <div class="tournament-grid">
+    {% for image in images_2 %}
+      <div class="tournament-item">
+        <button>asd</button>
+        <p>{{ image.description }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

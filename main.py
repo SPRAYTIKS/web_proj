@@ -11,6 +11,9 @@ from forms.users.register_final import RegisterFormFinal
 from all_consts import MY_EMAIL, MY_PASSWORD
 from random import randint
 import datetime as dt
+from os import listdir, mkdir
+from os.path import isfile, join
+import shutil
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandex'
@@ -38,7 +41,7 @@ def index():
 images = [
     {'filename': 'cat_1.jpg', 'description': 'Фотография 1'},
     {'filename': 'cat_2.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_3.jpg', 'description': 'Фотография 3'},
+    {'filename': 'cat_3.jpg', 'description': 'Фотография 2'},
     {'filename': 'cat_6.jpg', 'description': 'Фотография 4'},
     {'filename': 'cat_5.jpg', 'description': 'Фотография 5'},
 ]
@@ -46,7 +49,7 @@ images = [
 images_2 = [
     {'filename': 'cat_1.jpg', 'description': 'Фотография 1'},
     {'filename': 'cat_2.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_3.jpg', 'description': 'Фотография 3'},
+    {'filename': 'cat_3.jpg', 'description': 'Фотография 2'},
     {'filename': 'cat_6.jpg', 'description': 'Фотография 4'},
     {'filename': 'cat_5.jpg', 'description': 'Фотография 5'},
 ]
@@ -54,18 +57,29 @@ images_2 = [
 
 @app.route('/album')
 def album():
-    return render_template('album.html', images=images)
+    if current_user.is_authenticated:
+        return render_template('album.html', images=images, title='Альбомы')
+    return redirect('/login')
 
 
 @app.route('/album/photo')
 def photo():
-    return render_template('photo.html', images_2=images_2)
+    if current_user.is_authenticated:
+        return render_template('photo.html', images_2=images_2, title='Фотографии')
+    return redirect('/login')
 
 
 @login_m.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -78,7 +92,6 @@ def login():
             login_user(user, remember=True)
             return redirect('/')
         elif not user:
-            print(123)
             return render_template('login.html', form=form, message='Почты не существует!',
                                    title='Авторизация')
         else:
@@ -102,8 +115,8 @@ def register_first():
 
 @app.route('/register_second', methods=['GET', 'POST'])
 def register_second():
-    if 'regist_1' not in session:
-        redirect('/')
+    if 'regist_1' not in session or len(session['regist_1']) != 4:
+        return redirect('/register_first')
     form = RegisterFormSecond()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -115,14 +128,13 @@ def register_second():
                                    message='Пароли не совпадают!')
         session['regist_2'] = (session['regist_1'] + [form.email.data, form.password.data] +
                                [randint(100000, 999999)])
-        session['regist_1'].clear()
         return redirect('/push_message')
     return render_template('register_second.html', title='Регистрация', form=form)
 
 
 @app.route('/push_message', methods=['GET', 'POST'])
 def push_message():
-    if session['regist_2'] and len(session['regist_2']) == 7:
+    if 'regist_2' in session and len(session['regist_2']) == 7:
         name = session['regist_2'][1]
         email = session['regist_2'][4]
         n = session['regist_2'][6]
@@ -130,12 +142,13 @@ def push_message():
         message.body = f'Привет, {name}!\nВот твой код подтверждения: {n}'
         mail.send(message)
         return redirect('/register_final')
+    return redirect('/register_first')
 
 
 @app.route('/register_final', methods=['GET', 'POST'])
 def register_final():
-    if 'regist_2' not in session:
-        return redirect('/')
+    if 'regist_2' not in session or len(session['regist_2']) != 7:
+        return redirect('/register_first')
 
     surname = session['regist_2'][0]
     name = session['regist_2'][1]
@@ -155,12 +168,80 @@ def register_final():
         if int(code) == n:
             user = User(surname=surname, name=name, date_of_birth=date, gender=gender, email=email)
             user.set_password(password)
+            user.friends = '2'
+
             db_sess.add(user)
             db_sess.commit()
+
+            user_new_vec = db_sess.query(User).filter(User.id == 2).first()
+            user_new_vec.friends += f', {user.id}'
+            db_sess.commit()
+
             login_user(user, remember=True)
+            session['regist_1'].clear()
+            session['regist_2'].clear()
+
+            mkdir(f'./static/users/{user.id}')
+            mkdir(f'./static/users/{user.id}/image_on_profile')
+
+            src_path = f'./static/users/guest.png'
+            dst_path = f'./static/users/{user.id}/avatar.png'
+            shutil.copy(src_path, dst_path)
+
+            src_path = f'./static/users/standart_img.png'
+            dst_path = f'./static/users/{user.id}/image_on_profile/img_1.png'
+            shutil.copy(src_path, dst_path)
+
             return redirect('/')
         return render_template('register_final.html', title='Подтверждение', form=form, message='Неверный код!')
     return render_template('register_final.html', title='Подтверждение', form=form)
+
+
+@app.route('/profile/<int:id>', methods=['GET', 'POST'])
+def profile(id):
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+
+        user = db_sess.query(User).filter(User.id == id).first()
+        friends = user.friends.split(', ')
+        friends = friends if friends != [''] else []
+        friends = list(map(int, friends))
+        friends = db_sess.query(User).filter(User.id.in_(friends)).all()
+
+        mypath = f'./static/users/{user.id}/image_on_profile/'
+        new_path = f'./../static/users/{user.id}/image_on_profile/'
+        new_paths = [new_path + f for f in listdir(mypath) if isfile(join(mypath, f))]
+        new_paths = sorted(new_paths, key=lambda x: int(x.split('/')[-1][4:-4]))[::-1]
+
+        if current_user.id == id:
+            return render_template('profile_my.html', title='Мой профиль', friends=friends, user=user,
+                                   img=new_paths, q_f=str(len(friends)))
+        else:
+
+            return render_template('profile_my.html', title=f'{user.name} {user.surname}', friends=friends,
+                                   img=new_paths, user=user, q_f=str(len(friends)))
+    return redirect('/login')
+
+
+@app.route('/tournaments', methods=['GET', 'POST'])
+def tournaments():
+    if current_user.is_authenticated:
+        admin = True if current_user.status == 'admin' or current_user.status == '143' else False
+        return render_template('tournaments.html', title='Турниры', admin=admin, images_2=images_2)
+    return redirect('/login')
+
+
+@app.route('/friends', methods=['GET', 'POST'])
+def friends():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        users = db_sess.query(User).all()
+        my_friends =  db_sess.query(User).filter(User.id == current_user.id).first()
+        my_friends = list(map(int, my_friends.friends.split(', ')))
+        users = [user for user in users if user.id != current_user.id and user.id not in my_friends]
+        return render_template('friends.html', title='Все пользователи', users=users)
+
+    return redirect('/login')
 
 
 def main():
