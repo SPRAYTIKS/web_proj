@@ -21,6 +21,76 @@
             <span style="font-size: 36px; font-weight: bold; color: #f8c301;">ВК "Новый Век"</span>
           </div>
           {% if current_user.is_authenticated %}
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                  <div class="container-fluid">
+                    <a class="navbar-brand" href="#"></a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                      <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                          <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="logo" style="width: 40px; height: auto;">
+                                <img src="./../static/image/design_image/notifications.png" alt="Логотип" class="avatar" style="border: none;">
+                            </div>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end" style="
+                                    background-color: rgb(26, 29, 31); height: 400px; width: 300px; overflow-y: scroll;" id="invite_friend">
+                              {% if len_notifications != 0 %}
+                                  {% for n in notifications %}
+                                        {% if n.split()[0] == 'add' %}
+                                            <div class="notification"><div>
+                                                <button class="logo-button-avatar" onclick="location.href='/profile/{{ n.split()[1] }}'">
+                                                    <img src="./../static/users/{{ n[4:] }}/avatar.png" alt="Логотип" class="avatar"
+                                                            style="height: 45px; width: auto; margin: 10px;">
+                                                </button>
+                                                <span style="color: #f8c301; font-size: 17px;">Заявка в друзья!</span></div>
+                                                <div>
+                                                <button type="button" class="btn btn-warning"
+                                                        onclick="location.href='/cancel_add_friend/{{ n.split()[1] }}/{{current_user.id }}/{{loop.index}}'"
+                                                        style="float:right; margin-right: 10px;">Отклонить</button>
+                                                <button type="button" class="btn btn-light"
+                                                        onclick="location.href='/perform_add_friend/{{ n.split()[1] }}/{{current_user.id }}/{{loop.index}}'"
+                                                        style="float:right; margin-right: 10px;">Принять</button>
+                                                </div>
+                                            </div>
+                                        {% elif n.split()[0] == 'invite' %}
+                                            <div class="notification"><div>
+                                                <button class="logo-button-avatar" onclick="location.href='/profile/{{ n.split()[1] }}'">
+                                                    <img src="./../static/users/{{ n.split()[1] }}/avatar.png" alt="Логотип" class="avatar"
+                                                            style="height: 45px; width: auto; margin: 10px;">
+                                                </button>
+                                                <a style="color: #f8c301; font-size: 17px;" href="/league/{{ n.split()[2] }}">Приглашение!</a></div>
+                                                <div>
+                                                <button type="button" class="btn btn-warning"
+                                                        onclick="location.href='/cancel_invite_friend/{{ n.split()[1] }}/{{current_user.id }}/{{ n.split()[2] }}/{{loop.index}}'"
+                                                        style="float:right; margin-right: 10px;">Отклонить</button>
+                                                <button type="button" class="btn btn-light"
+                                                        onclick="location.href='/perform_invite_friend/{{ n.split()[1] }}/{{current_user.id }}/{{ n.split()[2] }}/{{loop.index}}'"
+                                                        style="float:right; margin-right: 10px;">Принять</button>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                  {% endfor %}
+                              {% else %}
+                                    <div class="notification"><div>
+                                        <button class="logo-button-avatar" onclick="location.href='/profile/1'"
+                                            style="margin-top: 25px;">
+                                            <img src="./../static/users/1/avatar.png" alt="Логотип" class="avatar"
+                                                 style="height: 45px; width: auto; margin: 10px;">
+                                        </button>
+                                        <span style="color: #f8c301; font-size: 17px; margin-top: 25px;">Нет уведомлений</span></div>
+                                    </div>
+                              {% endif %}
+                          </ul>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </nav>
+          {% endif %}
+          {% if current_user.is_authenticated %}
                 <button class="logo-button-avatar" onclick="location.href='/friends'"
                         style="margin-right: 20px;">
           {% endif %}
@@ -30,8 +100,7 @@
                 </div>
           {% endif %}
 
-
-              {% if current_user.is_authenticated %}
+          {% if current_user.is_authenticated %}
                 <button class="logo-button-avatar" onclick="location.href='/profile/{{ current_user.id }}'">
           {% else %}
                 <button class="logo-button-avatar" onclick="location.href='/login'">
@@ -44,7 +113,9 @@
                 <img src="./../static/users/guest.png" alt="Логотип" class="avatar">
               {% endif %}
             </div>
-          </button>
+          {% if current_user.is_authenticated %}
+                </button>
+          {% endif %}
     </div>
     <nav>
       <ul>
@@ -56,8 +127,9 @@
       </ul>
     </nav>
   </header>
-  <main role="main" class="container">
+  <main role="main" class="container" style="overflow-y: hidden;">
       {% block content %}{% endblock %}
   </main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
 </body>
 </html>

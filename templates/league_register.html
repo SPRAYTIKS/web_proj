@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: rgb(48, 52, 56); width: 80%; height: 500px; display: flex;" class="league_class">
+        <div style="border-radius: 20px 0px 0px 20px; width: 65%; height: 500px; background-color: rgb(41, 44, 46);">
+            <div class="container_team" id="league" style="grid-template-rows: repeat({{ q_team }}, 60px);">
+                {% for users in team %}
+                    <div class="number">{{ loop.index }}</div>
+                    <button class="player" onclick="location.href='/profile/{{ users[0].id }}'" style="
+                                    border-radius: 10px; display: block;">
+                        <div style="float:left; width: 100%;">
+                            <img src="./../static/users/{{ users[0].id }}/avatar.png" alt="Логотип" class="avatar" style="width: 50px;
+                                    margin-left: 5px; float: left;">
+                            <span style="font-size:1.3rem; font-weight:500; color:#f8c301; margin-top: 10px;
+                                    float: left; margin-left: 30px;">{{users[0].surname }}</span>
+                        </div>
+                    </button>
+                    <button class="player" onclick="location.href='/profile/{{ users[1].id }}'" style="
+                                    border-radius: 10px; display: block;">
+                        <div style="float:left; width: 100%;">
+                            <img src="./../static/users/{{ users[1].id }}/avatar.png" alt="Логотип" class="avatar" style="width: 50px;
+                                    margin-left: 5px; float: left;">
+                            <span style="font-size:1.3rem; font-weight:500; color:#f8c301; margin-top: 10px;
+                                    float: left; margin-left: 30px;">{{users[1].surname }}</span>
+                        </div>
+                    </button>
+                {% endfor %}
+            </div>
+            <div class="progress-stacked" style="height: 40px; width: 90%; margin: 0 auto; margin-top: 20px;">
+              <div class="progress" role="progressbar" aria-label="Segment one" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ percent }}%;">
+                <div class="progress-bar" style="background-color: #f8c301; height: 40px; font-size: 25px; color: #202124">{{ q_team }}</div>
+              </div>
+              <div class="progress" role="progressbar" aria-label="Segment two" aria-valuenow="{{ 100 - percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ 100 - percent }}%">
+                <div class="progress-bar" style="background-color: #202124; height: 40px; font-size: 25px; color: #f8c301">{{ league.team_quantity - q_team }}</div>
+              </div>
+            </div>
+        </div>
+        <div style="width: 30%; margin: 0 auto; margin-top: auto;">
+        {% if current_user.status == 'admin' %}
+            <div style="margin-bottom: 20px;">
+                <button type="button" class="btn btn-outline-danger" style="width: 49%; font-size: 25px;"
+                            onclick="location.href='/reduce_team/{{ league.id }}'">-</button>
+                <button type="button" class="btn btn-outline-success" style="width: 49%; font-size: 25px;"
+                            onclick="location.href='/increase_team/{{ league.id }}'">+</button>
+            </div>
+        {% endif %}
+        {% if current_user.id in players_id %}
+            <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">
+            Вы уже записаны</span></button></p>
+        {% else %}
+            <p><button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    style="height: 40px; width: 100%;"><span style="font-size:1.3rem; font-weight:500; color:#202124;">
+                Записаться</span></button></p>
+        {% endif %}
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content" style="height: 400px;">
+                  <div class="modal-header" style="background-color: #212529;">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Пригласите друга на турнир!</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body" style="background-color: #1A1D1F; overflow-y: scroll;" id="invite_friend">
+                    {% for user in friends %}
+                      <button class="player" onclick="location.href='/invite_friend/{{ current_user.id }}/{{ user.id }}/{{ league.id }}'" style="
+                        border-radius: 10px; display: block; width: 90%; margin: 0 auto; margin-bottom: 10px;">
+                        <div style="float:left; width: 100%;">
+                            <img src="./../static/users/{{ user.id }}/avatar.png" alt="Логотип" class="avatar" style="width: 50px;
+                                    margin-left: 5px; float: left;">
+                            <span style="font-size:1.3rem; font-weight:500; color:#f8c301; margin-top: 7px;
+                                    float: left; margin-left: 20px;">{{ user.name }} {{user.surname }}</span>
+                        </div>
+                        </button>
+                      {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

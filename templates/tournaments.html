@@ -3,12 +3,20 @@
 {% block content %}
 <div class="tournament-container">
   <div class="tournament-grid">
-    {% for image in images_2 %}
-      <div class="tournament-item">
-        <button>asd</button>
-        <p>{{ image.description }}</p>
-      </div>
-    {% endfor %}
+      {% if admin %}
+          <button class="tournament-item" onclick="location.href='/create_tournament'"
+               style="background-color: #212529; border: 0px;">
+              <img src="./../static/image/background_tournament/plus.png" style="width: 50%; height: auto;">
+          </button>
+      {% endif %}
+      {% for tour in all_tournaments %}
+            <button class="tournament-item" onclick="location.href='/tournament_league/{{ tour.id }}'"
+                style="background-image: url(./../static/tournaments/{{ tour.id }}/img.png); background-size: 100%;">
+                <a href="/edit_tournament/{{ tour.id }}" style="float: right">
+                    <img src="./../static/image/design_image/tocka.png" style="height: 40px;">
+                </a>
+            </button>
+      {% endfor %}
   </div>
 </div>
 {% endblock %}

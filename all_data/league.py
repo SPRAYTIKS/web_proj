@@ -1,3 +1,5 @@
+from email.policy import default
+
 import sqlalchemy
 from sqlalchemy import orm
 from .db_session import SqlAlchemyBase
@@ -13,7 +15,8 @@ class League(SqlAlchemyBase, SerializerMixin):
     level = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     type = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     players = sqlalchemy.Column(sqlalchemy.String)
-    group_quantity = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
+    team = sqlalchemy.Column(sqlalchemy.String)
+    team_quantity = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
+    is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     tournament = orm.relationship('Tournament')

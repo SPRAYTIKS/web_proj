@@ -11,7 +11,8 @@ class GroupTournament(SqlAlchemyBase, SerializerMixin):
                            autoincrement=True)
     is_tournament = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tournaments.id'), nullable=False)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    players = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    players = sqlalchemy.Column(sqlalchemy.String)
+    team = sqlalchemy.Column(sqlalchemy.String)
     players_quantity = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
 

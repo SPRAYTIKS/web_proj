@@ -17,8 +17,6 @@
 
 .text-log {
     color: rgb(248, 195, 1);
-    font-family: century;
-    font-weight: bold;
     font-size: 21px;
 }
 
@@ -123,16 +121,6 @@ a, but {
     border-radius: 30px;
 }
 
-#header{
-  width: 100%;
-  height:150px;
-  background:url(../image/background_tournament/img.png);
-  background-size:cover;
-  background-position: center center;
-  transition: all .08s linear;
-  border-radius: 20px 20px 0px 0px;
-}
-
 #profile{
   height:160px;
   background: rgb(26, 29, 31);
@@ -176,21 +164,6 @@ a, but {
   overflow:hidden;
 }
 
-.friends,
-.achievements{
-  font-family: 'Open Sans', sans-serif;
-  font-size:0.9rem;
-  color:white;
-  font-weight:300;
-}
-.achievements{
-  float:right;
-  padding-right:50px;
-}
-.bottom{
-  margin-top:10px;
-}
-
 .count{
   color:#f8c301;
   font-family: 'Open Sans', sans-serif;
@@ -224,3 +197,4 @@ a, but {
 .el_table:hover img {
   transition: all 0.3s ease;
 }
+

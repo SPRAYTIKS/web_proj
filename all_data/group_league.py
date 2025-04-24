@@ -11,7 +11,8 @@ class GroupLeague(SqlAlchemyBase, SerializerMixin):
                            autoincrement=True)
     is_league = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('leagues.id'), nullable=False)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    players = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    players = sqlalchemy.Column(sqlalchemy.String)
+    team = sqlalchemy.Column(sqlalchemy.String)
     players_quantity = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
 

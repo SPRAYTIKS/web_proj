@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ title }}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+              rel="stylesheet"
+              integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+              crossorigin="anonymous">
+        <link rel="stylesheet" href="../static/css/style.css">
+        <link rel="icon" href="../static/image/design_image/logo.png" type="image/png">
+    </head>
+    <body style="background-color: rgb(33, 37, 41);">
+        <div style="background-color: rgb(26, 29, 31); width: 40%;" class="login">
+            <a href="/" class="a_logo"><img src="../static/image/design_image/logo.jpg" class="image_log"></a>
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <p>
+                    <span class="text-log">{{ form.name.label }}</span>
+                    {{ form.name(class="form-control", type="name") }}
+                    {% if message == 'Почты не существует!' %}
+                        <span class="danger_text">{{ message }}</span>
+                    {% else %}
+                        <span class="invisible_text">123</span>
+                    {% endif %}
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.quantity.label }}</span>
+                    {{ form.quantity(class="form-control") }}
+                    {% if message == 'Слишком много лиг!' %}
+                        <span class="danger_text">{{ message }}</span>
+                    {% else %}
+                        <span class="invisible_text">123</span>
+                    {% endif %}
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.start_registration.label }}</span>
+                    {{ form.start_registration(class="form-control") }}
+                    <span class="invisible_text">123</span>
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.end_registration.label }}</span>
+                    {{ form.end_registration(class="form-control") }}
+                    {% if message == 'Введите другую дату регистрации!' %}
+                        <span class="danger_text">{{ message }}</span>
+                    {% else %}
+                        <span class="invisible_text">123</span>
+                    {% endif %}
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.start_tournament.label }}</span>
+                    {{ form.start_tournament(class="form-control") }}
+                    <span class="invisible_text">123</span>
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.end_tournament.label }}</span>
+                    {{ form.end_tournament(class="form-control") }}
+                    {% if message == 'Введите другую дату турнира!' %}
+                        <span class="danger_text">{{ message }}</span>
+                    {% else %}
+                        <span class="invisible_text">123</span>
+                    {% endif %}
+                </p>
+
+                <p>
+                    <span class="text-log">{{ form.type.label }}</span><br>
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width: 100%">
+                      {% for subfield in form.type %}
+                         {{ subfield(type="radio", class="btn-check", autocomplete="off") }}
+                         <label class="btn btn-outline-light" for="btnradio3">
+                             {{ subfield.label }}</label>
+                    {% endfor %}
+                    </div>
+                </p><br>
+
+                <p>
+                    {{ form.is_visible(type="checkbox", class="btn-check", id="btn-check-outlined", autocomplete="off") }}
+                    <label class="btn btn-outline-light" for="btn-check-outlined" style="width: 45%;">Видно турнир</label>
+
+                    {{ form.is_register(type="checkbox", class="btn-check", id="btn-check-2-outlined", autocomplete="off") }}
+                    <label class="btn btn-outline-light" for="btn-check-2-outlined" style="float: right; width: 45%;">Начать регистрацию</label>
+                </p><br>
+
+                <p>
+                <div class="d-grid gap-2">
+                    {{ form.submit(type="submit", class="btn btn-warning") }}
+                </div>
+                </p>
+            </form>
+        </div>
+    </body>
+</html>

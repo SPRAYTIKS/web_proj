@@ -14,23 +14,24 @@
     <body style="background-color: rgb(33, 37, 41);">
         <div style="background-color: rgb(26, 29, 31); width: 60%;" class="profile">
               {% set id = user.id.__str__()%}
-              <div id="header"></div>
+              <img src="./../static/users/{{ user.id }}/background.png" style=" width: 100%;
+                    height: 150px; object-fit: cover; border-radius: 20px 20px 0px 0px;">
               <div id="profile">
                 <div class="image">
                 <img src="../static/users/{{id}}/avatar.png" alt="" />
                 </div>
                 <div class="name">
                   {{user.name}} {{user.surname}}
-                </div><br><br>
-                <div class="bottom">
-                <span class="friends">
-                  Количество друзей:
-                    <span class="count"> {{q_f}}</span>
-                  </span>
-                  <span class="achievements">
-                    Количество достижений:
-                      <span class="count"> 0</span>
-                  </span>
+                    <button type="button" class="btn btn-outline-light" onclick="location.href='/edit_profile/{{ user.id }}'" style="float: right; margin-right: 50px;">
+                        Редактировать
+                    </button>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button type="button" class="btn btn-outline-secondary" disabled>Количество друзей: {{ q_f }}</button>
+                    <button type="button" class="btn btn-outline-secondary"
+                            style="margin-left: 20px;" disabled>{{status}}</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="location.href='/logout'" style="float: right; margin-right: 50px;">
+                        Выйти</button>
                 </div>
               </div>
             </div>
@@ -88,25 +89,7 @@
                      {% endfor %}
                 </div>
         </div>
-        <div style="background-color: rgb(26, 29, 31); width: 60%;" class="login">
-            <div class="d-flex flex-row flex-nowrap overflow-auto" id="ac" style="width: 100%; height: 360px;">
-                     {% for user_id in friends %}
-                     <button class="logo-button" style="height: 300px;
-                        margin-top: 20px; margin-left: 5px; margin-right: 5px; margin-bottom: 20px;">
-                      <div class="card card-block mx-2" style="width: 200px; height: 300px; display: flex;
-                                    justify-content: center; background-color: rgb(74, 73, 74);">
-                          <div class="logo">
-                            {% set id = user_id.id.__str__()%}
-                            <img src="../static/users/{{ id }}/avatar.png" alt="Логотип" class="avatar" style="display: block;
-                                margin: 0 auto; ">
-                          </div>
-                          <span style="font-size: 25px; font-weight: bold; color: #f8c301; text-align: center; margin-top: 10px;">
-                              {{user_id.name}} {{user_id.surname}}</span>
-                      </div>
-                     </button>
-                     {% endfor %}
-                </div>
-        </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     </body>
 </html>
