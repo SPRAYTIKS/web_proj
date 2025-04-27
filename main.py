@@ -1,6 +1,10 @@
+import array
 import os
-
+from asyncio import all_tasks
+import csv
 from flask import Flask, render_template, redirect, request, abort, make_response, jsonify, session, flash, url_for
+from bs4 import BeautifulSoup
+import requests
 from werkzeug.utils import secure_filename
 from pyexpat.errors import messages
 from flask_mail import Mail, Message
@@ -9,6 +13,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from all_data.user import User
 from all_data.tournament import Tournament
 from all_data.league import League
+from all_data.group_league import GroupLeague
 from forms.users.login import LoginForm
 from forms.users.register_first import RegisterFormFirst
 from forms.users.register_second import RegisterFormSecond
@@ -91,7 +96,7 @@ def photo():
 @login_m.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
-    return db_sess.query(User).get(user_id)
+    return db_sess.query(User).filter(User.id == user_id).first()
 
 
 @app.route('/logout')
@@ -431,10 +436,35 @@ def invite_friend(id_my, id_friend, id_league):
 def perform_invite_friend(id_my, id_friend, id_league, loop_index):
     if not current_user.is_authenticated:
         return redirect('/login')
-    if current_user == id_friend:
+    if current_user.id == id_friend:
         db_sess = db_session.create_session()
         league = db_sess.query(League).filter(League.id == id_league).first()
         tournament = db_sess.query(Tournament).filter(Tournament.id == league.is_tournament).first()
+
+        with open(f'./static/users/{id_friend}/notifications.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+        with open(f'./static/users/{id_friend}/notifications.txt', 'w') as file:
+            for en, i in enumerate(f):
+                if en != loop_index - 1:
+                    file.write(i + '\n')
+
+        with open(f'./static/users/{id_my}/application.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+        with open(f'./static/users/{id_my}/application.txt', 'w') as file:
+            for i in f:
+                if i.split()[0] == str(id_friend) and i.split()[1] == str(id_league):
+                    pass
+                else:
+                    file.write(i + '\n')
+
+        if not tournament.is_register:
+            return redirect(request.referrer)
+        if not league.team is None and len(league.team.split()) == league.team_quantity:
+            return redirect(request.referrer)
+        if (not league.team is None and
+                (str(id_my) in league.players.split() or str(id_friend) in league.players.split())):
+            return redirect(request.referrer)
+
         if league.team is None:
             league.team = f'{id_my}_{id_friend} '
         else:
@@ -456,23 +486,7 @@ def perform_invite_friend(id_my, id_friend, id_league, loop_index):
             tournament.players += f' {id_my} {id_friend}'
 
         db_sess.commit()
-        db_sess.commit()
 
-        with open(f'./static/users/{id_friend}/notifications.txt', 'r') as f:
-            f = [i.strip() for i in f.readlines()]
-        with open(f'./static/users/{id_friend}/notifications.txt', 'w') as file:
-            for en, i in enumerate(f):
-                if en != loop_index - 1:
-                    file.write(i + '\n')
-
-        with open(f'./static/users/{id_my}/application.txt', 'r') as f:
-            f = [i.strip() for i in f.readlines()]
-        with open(f'./static/users/{id_my}/application.txt', 'w') as file:
-            for i in f:
-                if i.split()[0] == str(id_friend) and i.split()[1] == str(id_league):
-                    pass
-                else:
-                    file.write(i + '\n')
     return redirect(request.referrer)
 
 
@@ -519,9 +533,9 @@ def increase_team(id):
     db_sess = db_session.create_session()
     league = db_sess.query(League).filter(League.id == id).first()
     if league and current_user.status == 'admin':
-        if league.team_quantity != 30:
+        if league.team_quantity + 1 <= 32:
             league.team_quantity += 1
-            db_sess.commit()
+    db_sess.commit()
     return redirect(request.referrer)
 
 
@@ -532,12 +546,13 @@ def reduce_team(id):
     db_sess = db_session.create_session()
     league = db_sess.query(League).filter(League.id == id).first()
     if league and current_user.status == 'admin':
-        if league.team_quantity != 3:
+        if league.team_quantity - 1 >= 3:
             if league.team:
                 if len(league.team.split()) != league.team_quantity:
                     league.team_quantity -= 1
-            league.team_quantity -= 1
-            db_sess.commit()
+            else:
+                league.team_quantity -= 1
+    db_sess.commit()
     return redirect(request.referrer)
 
 
@@ -569,7 +584,6 @@ def tournaments():
             all_tournaments = db_sess.query(Tournament).filter(Tournament.is_visible == 1).all()[::-1]
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-        print(all_tournaments)
         return render_template('tournaments.html', title='Турниры', admin=admin, all_tournaments=all_tournaments,
                                notifications=f, len_notifications=len(f))
     return redirect('/login')
@@ -696,8 +710,8 @@ def create_league(id):
     return redirect('/login')
 
 
-@app.route('/league/<int:id>', methods=['GET', 'POST'])
-def league_id(id):
+@app.route('/league/<int:id>/<int:id_group>', methods=['GET', 'POST'])
+def league_id(id, id_group):
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
@@ -708,9 +722,48 @@ def league_id(id):
 
         if league and (tournament.is_visible or current_user.status == 'admin'):
             if tournament.is_started or tournament.is_finished:
+                groups = db_sess.query(GroupLeague).filter(GroupLeague.is_league == league.id).all()
+                if groups:
+                    if request.method == 'POST':
+                        if 'home' in request.form:
+                            return redirect(f'/tournament_league/{tournament.id}')
+                    group = groups[0]
+                    with open(f'./groups/table_format/{group.players_quantity}_team.csv', 'r') as file:
+                        games = []
+                        for game in file:
+                            game = game.strip().split(',')
 
-                return render_template('league_start.html', title=f'Лига {league.type} {league.level}', team=league,
-                                       notifications=f, len_notifications=len(f))
+                            player_1 = int(group.team.split()[int(game[2]) - 1].split('_')[0])
+                            player_2 = int(group.team.split()[int(game[4]) - 1].split('_')[0])
+                            referee = int(group.team.split()[int(game[5]) - 1].split('_')[0])
+
+                            player_1 = db_sess.query(User).filter(User.id == player_1).first()
+                            player_1 = f'{player_1.surname} {player_1.name[0]}.'
+                            player_2 = db_sess.query(User).filter(User.id == player_2).first()
+                            player_2 = f'{player_2.surname} {player_2.name[0]}.'
+                            referee = db_sess.query(User).filter(User.id == referee).first()
+                            referee = f'{referee.surname} {referee.name[0]}.'
+
+                            games.append([player_1, player_2, referee])
+                    admin = 'true' if current_user.status == 'admin' else 'false'
+
+                    result = []
+                    with open(f'./groups/{group.id}.csv', 'r', encoding='utf-8') as file:
+                        file = list(file)
+                        for q in file[:-1]:
+                            q = q.strip().split(',')
+                            result.append(q)
+                        format_game = file[-1]
+                    return render_template('league_start.html', title=f'Лига {league.type} {league.level}',
+                                           league=league, group=group, notifications=f, admin=admin, num=id_group,
+                                           len_notifications=len(f), groups=groups, games=games, result=result,
+                                           format=format_game)
+
+                tournament.is_started = 0
+                tournament.is_finished = 0
+                db_sess.commit()
+                return redirect(f'/tournament_league/{tournament.id}')
+
             elif tournament.is_register:
                 teams = league.team
                 new_teams = []
@@ -725,7 +778,6 @@ def league_id(id):
                 friends_my = db_sess.query(User).filter(User.id == current_user.id).first().friends.split(', ')
                 friends_my = db_sess.query(User).filter(User.id.in_(friends_my)).all()[1:]
                 players_id = []
-
                 if league.players is None:
                     percent = 0
                 else:
@@ -733,14 +785,229 @@ def league_id(id):
                     friends_my = [user for user in friends_my if user.id not in map(int, league.players.split())]
                     players_id = map(int, league.players.split())
 
+                application = False
+                with open(f'./static/users/{current_user.id}/application.txt', 'r') as file:
+                    for i in file.readlines():
+                        i = i.strip().split()
+                        if int(i[1]) == league.id:
+                            application = True
+                            break
+
+                max_team = False
+                if len(new_teams) == league.team_quantity:
+                    max_team = True
+
                 return render_template('league_register.html', title=f'Регистрация {league.type} {league.level}',
                                        league=league, team=new_teams, q_team=len(new_teams), notifications=f,
                                        len_notifications=len(f),
                                        friends=friends_my, players_id=players_id,
-                                       percent=percent)
+                                       percent=percent, application=application, max_team=max_team)
+
             return redirect(f'/tournament_league/{tournament.id}')
         return redirect('/tournaments')
 
+    return redirect('/login')
+
+
+@app.route('/starting_tournament/<int:id>', methods=['GET', 'POST'])
+def starting_tournament(id):
+    if current_user.is_authenticated:
+        if current_user.status == 'admin':
+            db_sess = db_session.create_session()
+            tournament = db_sess.query(Tournament).filter(Tournament.id == id).first()
+            if tournament:
+                leagues = db_sess.query(League).filter(League.is_tournament == id).all()
+                errors = []
+                if tournament.is_register:
+                    errors.append('Регистрация на турнир продолжается!')
+                if len(leagues) == 0:
+                    errors.append('В турнире нет не одной лиги!')
+                for league in leagues:
+                    if league.team is None:
+                        errors.append(f'В лиге {league.type} {league.level} нет команд!')
+                    elif len(league.team.split()) != league.team_quantity:
+                        errors.append(f'В лиге {league.type} {league.level} недостаточно команд!')
+
+                return render_template('starting_tournament.html', tournament=tournament, title='Запуск турнира',
+                                       errors=errors, len_errors=len(errors))
+
+            return redirect('/tournaments')
+        return redirect('/tournaments')
+    return redirect('/login')
+
+
+@app.route('/create_groups/<int:id>', methods=['GET', 'POST'])
+def create_groups(id):
+    if current_user.is_authenticated:
+        if current_user.status == 'admin':
+            db_sess = db_session.create_session()
+            tournament = db_sess.query(Tournament).filter(Tournament.id == id).first()
+            if tournament and not tournament.is_register:
+                leagues = db_sess.query(League).filter(League.is_tournament == id).all()
+                leagues_id = [league.id for league in leagues]
+
+                groups = db_sess.query(GroupLeague).filter(GroupLeague.is_league.in_(leagues_id)).all()
+                if not groups:
+                    db_sess.commit()
+                    q_teams = [len(league.team.split()) for league in leagues]
+                    new_q = []
+                    for q in q_teams:
+                        arr = [6 for _ in range(q // 6)]
+                        if q % 6 == 0:
+                            pass
+                        elif q % 6 >= 3:
+                            arr.append(q % 6)
+                        else:
+                            arr[-1] -= (3 - q % 6)
+                            arr.append(3)
+                        zeros = [0 for _ in range(8 - len(arr))]
+                        arr.extend(zeros)
+                        new_q.append(arr)
+                    sum_team = [sum(q) for q in new_q]
+
+                    if request.method == 'POST':
+                        arr = []
+                        for i in range(len(new_q)):
+                            ar = []
+                            for j in range(8):
+                                r = int(request.form[f'{i + 1} {j + 1}'])
+                                ar.append(r)
+                            arr.append(ar)
+                        new_q = arr[:]
+                        message = []
+                        for q in range(len(new_q)):
+                            if sum(new_q[q]) != sum_team[q]:
+                                message.append(f'Распределено {sum(new_q[q])} вместо {sum_team[q]}!')
+                            else:
+                                message.append('1')
+                        if all([i == '1' for i in message]):
+                            session['create_group'] = [sorted(q)[::-1] for q in new_q]
+                            session['ready'] = [0 for _ in new_q]
+                            session['ready_league'] = [[] for _ in new_q]
+                            session['message'] = [[] for _ in new_q]
+                            return redirect(f'/distribution_team/{tournament.id}/0')
+
+                        return render_template('create_groups.html', leagues=leagues, tournament=tournament,
+                                               title='Создание групп', q_teams=new_q, messages=message)
+
+                    return render_template('create_groups.html', leagues=leagues, tournament=tournament,
+                                           title='Создание групп', q_teams=new_q, messages=['1'] * len(new_q))
+
+        return redirect('/tournaments')
+    return redirect('/login')
+
+
+@app.route('/distribution_team/<int:id>/<int:num_league>', methods=['GET', 'POST'])
+def distribution_team(id, num_league):
+    if current_user.is_authenticated:
+        if current_user.status == 'admin':
+            db_sess = db_session.create_session()
+            tournament = db_sess.query(Tournament).filter(Tournament.id == id).first()
+            if tournament and not tournament.is_register:
+                leagues = db_sess.query(League).filter(League.is_tournament == id).all()
+                leagues_id = [league.id for league in leagues]
+
+                groups = db_sess.query(GroupLeague).filter(GroupLeague.is_league.in_(leagues_id)).all()
+
+                if not groups and 'create_group' in session and 'ready' in session and 'ready_league' in session:
+                    teams = [i.team_quantity for i in leagues]
+                    if (len(teams) == len(session['create_group']) and len(teams) == len(session['ready']) and len(
+                            teams) == len(session['ready_league']) and
+                            all([teams[i] == sum(session['create_group'][i]) for i in range(len(teams))])):
+
+                        league = leagues[num_league]
+                        teams = [' / '.join([db_sess.query(User).filter(User.id == int(j)).first().surname
+                                             for j in i.split('_')])
+                                 for i in league.team.split()]
+                        all_teams = teams[:]
+                        if session['ready_league'][num_league]:
+                            teams = session['ready_league'][num_league][:]
+
+                        if request.method == 'POST':
+                            f = request.form
+                            if 'name' in f and all(session['ready']):
+                                for en, league in enumerate(session['ready_league']):
+                                    for en_b, q in enumerate(session['create_group'][en]):
+                                        if q == 0:
+                                            continue
+                                        teams = league[:q]
+                                        teams_db = (
+                                            db_sess.query(League).filter(League.id == leagues[en].id).first().team)
+                                        d_teams = {}
+
+                                        for team in teams_db.split():
+                                            team = list(map(int, team.split('_')))
+
+                                            user_1 = db_sess.query(User).filter(User.id == team[0]).first()
+                                            user_2 = db_sess.query(User).filter(User.id == team[1]).first()
+
+                                            d_teams[f'{user_1.surname} / {user_2.surname}'] = \
+                                                f'{user_1.id}_{user_2.id}'
+                                        teams_id = [d_teams[team] for team in teams]
+                                        players_id = ' '.join([' '.join(team.split('_')) for team in teams_id])
+                                        teams_id = ' '.join(teams_id)
+                                        group = GroupLeague(name=f'Группа {"АБВГДЕЖЗ"[en_b]}', players=players_id,
+                                                            team=teams_id, is_league=leagues[en].id,
+                                                            players_quantity=len(teams_id.split()))
+                                        db_sess.add(group)
+                                        db_sess.commit()
+
+                                        with open(f'{group.id}.csv', 'w', newline='', encoding="utf8") as csvfile:
+                                            writer = csv.writer(
+                                                csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                                            if group.players_quantity == 3:
+                                                q = 3
+                                            elif group.players_quantity == 4:
+                                                q = 6
+                                            elif group.players_quantity == 5:
+                                                q = 10
+                                            else:
+                                                q = 15
+                                            for i in range(q):
+                                                writer.writerow(['', '', ''])
+                                            writer.writerow(['Формат: '])
+
+                                        src_path = f'{group.id}.csv'
+                                        dst_path = f'groups'
+                                        shutil.move(src_path, dst_path)
+
+                                        league = leagues[q:]
+                                tournament.is_started = True
+                                db_sess.commit()
+                                return redirect(f'/tournament_league/{tournament.id}')
+
+                            elif 'apply' in f:
+                                arr = []
+                                for en, group in enumerate(session['create_group'][num_league]):
+                                    ar = []
+                                    for i in range(group):
+                                        r = f[f'{en} {i}']
+                                        arr.append(r)
+                                copy_teams = all_teams[:]
+                                repeat_teams = []
+                                for team in arr:
+                                    if team in copy_teams:
+                                        copy_teams.remove(team)
+                                    else:
+                                        repeat_teams.append(team)
+                                teams = arr[:]
+                                session.modified = True
+                                session['ready_league'][num_league] = teams[:]
+                                if repeat_teams:
+                                    session['ready'][num_league] = 0
+                                    session['message'][num_league] = repeat_teams
+                                else:
+                                    session['message'][num_league] = []
+                                    session['ready'][num_league] = 1
+
+                        return render_template('distribution_team.html', tournament=tournament,
+                                               ready=session['ready'], all_teams=all_teams,
+                                               title=f'Распределение команд {league.type} {league.level}',
+                                               leagues=leagues, num=num_league, league_my=league, teams=teams,
+                                               distribution=session['create_group'][num_league], name_group='АБВГДЕЖЗ',
+                                               message=session['message'][num_league])
+
+        return redirect('/tournaments')
     return redirect('/login')
 
 

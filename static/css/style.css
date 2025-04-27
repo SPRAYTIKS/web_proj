@@ -198,3 +198,81 @@ a, but {
   transition: all 0.3s ease;
 }
 
+.warning {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    background-color: #2C0B0E;
+    color: #C26B73;
+    border: 1px solid #6A1C23;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    padding-top: 5px;
+}
+
+.choice_group {
+    margin-bottom: 5px;
+    width: 100%;
+    display:inline-block;
+    display: grid;
+    grid-template-columns: repeat(8, 10%);
+    column-gap: 3%;
+}
+
+.grid_group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 2%;
+    row-gap: 30px;
+}
+
+.list-group-item {
+    background-color: rgb(255, 255, 255);
+    color: #000;
+    display: flex;
+    justify-content: center;
+    border: 3px solid #000;
+}
+
+td {
+    text-align: center;
+    vertical-align: middle;
+    height: 50px;
+    border: 2px solid #000;
+    color: #000;
+}
+
+.title_td {
+    font-weight: bold;
+    background-color: #999999;
+    font-family: 'Arial';
+    font-size: 20px;
+}
+
+.item_td {
+    background-color: #FFF;
+    font-family: 'Arial';
+    font-size: 14px;
+}
+
+.home {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.home:focus {
+  outline: none;
+}
+.home:hover {
+  transform: scale(1.05);
+}
+
+.home:hover img {
+  transition: all 0.3s ease;
+}
+

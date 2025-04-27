@@ -14,6 +14,6 @@ class GroupLeague(SqlAlchemyBase, SerializerMixin):
     players = sqlalchemy.Column(sqlalchemy.String)
     team = sqlalchemy.Column(sqlalchemy.String)
     players_quantity = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
+    is_finished = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     tournament = orm.relationship('League')

@@ -371,6 +371,37 @@ nav li {
     border-radius: 10px;
 }
 
+td {
+    text-align: center;
+    vertical-align: middle;
+    height: 50px;
+    border: 2px solid #000;
+    color: #000;
+}
+
+.title_td {
+    font-weight: bold;
+    background-color: #999999;
+    font-family: 'Arial';
+    font-size: 20px;
+}
+
+.item_td {
+    background-color: #FFF;
+    font-family: 'Arial';
+    font-size: 14px;
+}
+
+.login {
+    margin: auto;
+    margin-top: 1%;
+    margin-bottom: 2%;
+    border-radius: 20px;
+    padding: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+}
+
 
 
 
