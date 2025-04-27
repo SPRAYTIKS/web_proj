@@ -1,12 +1,7 @@
-import array
 import os
-from asyncio import all_tasks
 import csv
 from flask import Flask, render_template, redirect, request, abort, make_response, jsonify, session, flash, url_for
-from bs4 import BeautifulSoup
-import requests
 from werkzeug.utils import secure_filename
-from pyexpat.errors import messages
 from flask_mail import Mail, Message
 from all_data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
