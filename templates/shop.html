@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shop-container">
+  <div class="shop-card">
+    {% for shop in shops %}
+    <div class="shop">
+      <img src="{{ url_for('static', filename='image/products/' + shop.image) }}" alt="Фото товара">
+      <h2>{{ shop.name }}</h2>
+      <p>Цена: {{ shop.price }} руб.</p>
+      <a href="{{ url_for('buy', shop_id=shop.id) }}" class="btn-buy">Купить</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

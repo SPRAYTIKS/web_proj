@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="album-form">
+    <form action="/save_album" method="post" enctype="multipart/form-data">
+      <label for="album-name">Название альбома:</label>
+      <input type="text" id="album-name" name="album-name"><br><br>
+      <label for="main-photo">Главное фото:</label>
+      <input type="file" id="main-photo" name="main-photo"><br><br>
+      <label for="photos">Фотографии:</label>
+      <input type="file" id="photos" name="photos" multiple><br><br>
+      <input type="submit" value="Сохранить альбом">
+    </form>
+  </div>
+{% endblock %}

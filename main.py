@@ -1,7 +1,12 @@
+import array
 import os
+from asyncio import all_tasks
 import csv
 from flask import Flask, render_template, redirect, request, abort, make_response, jsonify, session, flash, url_for
+
+import requests
 from werkzeug.utils import secure_filename
+from pyexpat.errors import messages
 from flask_mail import Mail, Message
 from all_data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -17,11 +22,15 @@ from forms.tournaments.create_tournament import CreateTournamentForm
 from forms.tournaments.create_league import CreateLeagueForm
 from forms.users.edit import EditForm
 from forms.tournaments.edit import EditTournamentForm
-from all_consts import MY_EMAIL, MY_PASSWORD
+from all_consts import MY_EMAIL, MY_PASSWORD, BOT_TOKEN, CHAT_ID
 from random import randint
 import datetime as dt
 from os import listdir, mkdir
 from os.path import isfile, join
+import shutil
+import requests
+from functions import shop_func, photo_func
+import os
 import shutil
 
 app = Flask(__name__)
@@ -41,32 +50,26 @@ mail = Mail(app)
 months = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
           'Jul': '07', 'Aug': '08', 'Sept': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}
 
+news_list = [
+    {"title": "Новость 1", "text": "Текст новости 1", "image": "cat_1.jpg", "date": '01.02.2020', 'id': 1},
+    {"title": "Новость 2", "text": "Текст новости 2", "image": "cat_2.jpg", "date": '01.02.2020', 'id': 2},
+]
+
 
 @app.route('/')
 def index():
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-            return render_template('base.html', notifications=f, len_notifications=len(f))
-    else:
-        return render_template('base.html')
+            return render_template('index.html', news_list=news_list, notifications=f, len_notifications=len(f))
+    return redirect('/login')
 
 
-images = [
-    {'filename': 'cat_1.jpg', 'description': 'Фотография 1'},
-    {'filename': 'cat_2.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_3.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_6.jpg', 'description': 'Фотография 4'},
-    {'filename': 'cat_5.jpg', 'description': 'Фотография 5'},
-]
-
-images_2 = [
-    {'filename': 'cat_1.jpg', 'description': 'Фотография 1'},
-    {'filename': 'cat_2.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_3.jpg', 'description': 'Фотография 2'},
-    {'filename': 'cat_6.jpg', 'description': 'Фотография 4'},
-    {'filename': 'cat_5.jpg', 'description': 'Фотография 5'},
-]
+@app.route('/news/<int:id>')
+def news_page():
+    with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
+        f = [i.strip() for i in f.readlines()]
+        return render_template('news_page.html', notifications=f, len_notifications=len(f))
 
 
 @app.route('/album')
@@ -74,17 +77,93 @@ def album():
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-        return render_template('album.html', images=images, title='Альбомы', notifications=f, len_notifications=len(f))
+        if current_user.status != 'admin':
+            images = photo_func()
+            return render_template('album.html', images=images, notifications=f, len_notifications=len(f))
+        else:
+            return render_template('admin_album.html', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
 
-@app.route('/album/photo')
-def photo():
+@app.route('/save_album', methods=['POST'])
+def save_album():
+    album_name = request.form['album-name']
+    main_photo = request.files['main-photo']
+    photos = request.files.getlist('photos')
+
+    path = './static/image/album'
+    os.mkdir(path + '/' + album_name)
+    filename = main_photo.filename
+    upload_folder = './static/image/album/' + album_name
+    main_photo.save(os.path.join(upload_folder, filename))
+
+    os.mkdir(path + '/' + album_name + '/' + 'file')
+
+    for file in photos:
+        path = 'static/image/cash'
+        filename = file.filename
+        upload_folder = path
+        file.save(os.path.join(upload_folder, filename))
+
+        src_path = f'static/image/cash/{file.filename}'
+        dst_path = 'static/image/album/' + album_name + '/' + 'file' + '/' + file.filename
+        shutil.copy(src_path, dst_path)
+    return 'Альбом создан'
+
+
+@app.route('/photo/<int:photo_id>')
+def photo(photo_id):
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-        return render_template('photo.html', images_2=images_2, title='Фотографии', notifications=f,
-                               len_notifications=len(f))
+        images = photo_func()
+        return render_template('photo.html', images_2=images[photo_id - 1]['file'], notifications=f, len_notifications=len(f))
+    return redirect('/login')
+
+
+@app.route('/shop')
+def shop():
+    if current_user.is_authenticated:
+        with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+        if current_user.status != 'admin':
+            shops = shop_func()
+            return render_template('shop.html', shops=shops, notifications=f, len_notifications=len(f))
+        else:
+            return render_template('admin_shop.html', notifications=f, len_notifications=len(f))
+    return redirect('/login')
+
+
+@app.route('/add_product', methods=['POST'])
+def add_product():
+    photo = request.files['photo']
+    name = request.form['name']
+    price = request.form['price']
+    upload_folder = './static/image/products'
+    photo.save(os.path.join(upload_folder, photo.filename))
+    raz = photo.filename.split('.')
+    os.rename(upload_folder + '/' + photo.filename, upload_folder + '/' + name + '_' + price + '.' + raz[1])
+    return 'Товар добавлен!'
+
+
+@app.route('/buy/<int:shop_id>', methods=['GET', 'POST'])
+def buy(shop_id):
+    if current_user.is_authenticated:
+        with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+            email = None
+            shops = shop_func()
+            if request.method == 'POST':
+                email = request.form.get('email')
+                url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+                params = {
+                    'chat_id': CHAT_ID,
+                    'text': f"Новый заказ от {email}\n"
+                            f"-{shops[shop_id - 1]['name']}\n"
+                            f"Цена: {shops[shop_id - 1]['price']}\n"
+                }
+                requests.post(url=url, params=params)
+            return render_template('buy.html', shop=shops[shop_id - 1], email=email, notifications=f, len_notifications=len(f))
     return redirect('/login')
 
 

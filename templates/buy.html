@@ -1,0 +1,19 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="buy-container">
+  <div class="buy-card">
+    <img src="{{ url_for('static', filename='image/products/' + shop.image) }}" alt="Фото товара">
+    <h2>{{ shop.name }}</h2>
+    <p>Цена: {{ shop.price }} руб.</p>
+    <form action="" method="post">
+      <input type="text" name="email" placeholder="Введите ваш username в телеграме.">
+      <button type="submit">Подтвердить покупку</button>
+    </form>
+    {% if email %}
+        <p>Cпасибо за покупку, с вами свяжутся.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

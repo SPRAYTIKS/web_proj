@@ -2,14 +2,23 @@
 
 {% block content %}
 <div class="photo-gallery">
-  <h2>Галерея фотографий</h2>
   <div class="photo-grid">
     {% for image in images_2 %}
       <div class="photo-item">
-        <img src="{{ url_for('static', filename='image/' + image.filename) }}" alt="Фотография">
-        <p>{{ image.description }}</p>
+        <a href="#photo-modal-{{ loop.index }}">
+        <img src="{{ url_for('static', filename='image/cash/' + image.filename) }}" alt="Фото товара">
+        </a>
       </div>
     {% endfor %}
   </div>
 </div>
+{% for image in images_2 %}
+<div class="modal" id="photo-modal-{{ loop.index }}">
+  <a href="#" class="modal-close">&times;</a>
+  <div class="modal-content">
+        <img src="{{ url_for('static', filename='image/cash/' + image.filename) }}" alt="Фото товара">
+      <a href="#" class="download-button">Загрузить в профиль</a>
+  </div>
+</div>
+{% endfor %}
 {% endblock %}

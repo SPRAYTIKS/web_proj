@@ -8,6 +8,19 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',
     filename='css/style_2.css') }}">
     <link rel="stylesheet" type="text/css" href="/static/css/style_2.css'">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/main_style.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/album_style.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/photo_style.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/shop_style.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/main_slayid_style.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',
+    filename='css/buy.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <link rel="icon" href="/static/image/design_image/logo.png" type="image/png">
 </head>
 <body>
@@ -122,7 +135,7 @@
       <ul>
         <li><a href="/" class="button">Главная</a></li>
         <li><a href="/tournaments" class="button">Турниры</a></li>
-        <li><a href="#" class="button">Товары</a></li>
+        <li><a href="/shop" class="button">Товары</a></li>
         <li><a href="#" class="button">Результаты</a></li>
         <li><a href="/album" class="button">Альбомы</a></li>
       </ul>
@@ -131,6 +144,29 @@
   <main role="main" class="container" style="overflow-y: hidden;">
       {% block content %}{% endblock %}
   </main>
+  <footer class="footer">
+  <div class="container-3">
+    <div class="footer-logo">
+      <img src="{{ url_for('static', filename='image/logo_3.jpg') }}" alt="Логотип">
+    </div>
+    <div class="footer-text">
+      <p>&copy; Все права на любые материалы, опубликованные на сайте, защищены в соответствии с российским и международным законодательством об интеллектуальной собственности.</p>
+      <p>Любое использование текстовых, фото, аудио и видеоматериалов возможно только с согласия правообладателя.</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#">6+</a></li>
+      <li><a href="#">Правила приема и возврата платежей</a></li>
+      <li><a href="#">Оплата</a></li>
+      <li><a href="#">Сообщить о ставке/договорном матче</a></li>
+      <li><a href="#">Редакция</a></li>
+    </ul>
+    <div class="footer-contacts">
+      <p>Контактные данные:</p>
+      <p>+79092929229</p>
+      <p>info@mail.ru</p>
+    </div>
+  </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
 </body>
 </html>
