@@ -236,33 +236,13 @@ a, but {
     border: 3px solid #000;
 }
 
-td {
-    text-align: center;
-    vertical-align: middle;
-    height: 50px;
-    border: 2px solid #000;
-    color: #000;
-}
-
-.title_td {
-    font-weight: bold;
-    background-color: #999999;
-    font-family: 'Arial';
-    font-size: 20px;
-}
-
-.item_td {
-    background-color: #FFF;
-    font-family: 'Arial';
-    font-size: 14px;
-}
-
 .home {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  margin-left: 10px;
 }
 
 .home:focus {
@@ -273,6 +253,25 @@ td {
 }
 
 .home:hover img {
+  transition: all 0.3s ease;
+}
+
+.new-vec {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.new-vec:focus {
+  outline: none;
+}
+.new-vec:hover {
+  transform: scale(1.05);
+}
+
+.new-vec:hover img {
   transition: all 0.3s ease;
 }
 

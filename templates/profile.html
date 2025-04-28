@@ -20,8 +20,9 @@
                 <div class="image">
                 <img src="../static/users/{{id}}/avatar.png" alt="" />
                 </div>
-                <div class="name">
-                  {{user.name}} {{user.surname}}
+                <div class="name" style="display: inline;">
+                    {{user.name}} {{user.surname}}
+
                     {% if is_my_friend and not is_send %}
                     <button type="button" class="btn btn-outline-light" onclick="location.href='/add_friends/{{ current_user.id }}/{{ user.id }}'" style="float: right; margin-right: 50px;">
                         Добавить в друзья</button>
@@ -37,6 +38,8 @@
                 </div>
                 <div style="margin-top: 30px;">
                     <button type="button" class="btn btn-outline-secondary" disabled>Количество друзей: {{ q_f }}</button>
+                    <button type="button" class="home" onclick="location.href='/'">
+                            <img src="../static/image/design_image/home.png" style="width: 40px; height: auto;"></button>
                     <button type="button" class="btn btn-outline-secondary"
                             style="float: right; margin-right: 50px;" disabled>{{status}}</button>
                 </div>

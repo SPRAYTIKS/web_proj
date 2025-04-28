@@ -1,90 +1,108 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ title }}</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-              rel="stylesheet"
-              integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-              crossorigin="anonymous">
-        <link rel="stylesheet" href="./../../../static/css/style.css">
-        <link rel="icon" href="./../../../static/image/design_image/logo.png" type="image/png">
-    </head>
-    <body style="background-color: rgb(33, 37, 41);">
-        <div style="background-color: rgb(26, 29, 31); width: 60%; padding: 3%;" class="login">
-            <form action="/league/{{ league.id }}/{{ num }}" method="post">
+{% extends "base.html" %}
 
-            <div style="display: inline;">
-            <nav>
-              <ul class="pagination pagination-sm" style="float: left;">
+{% block content %}
+<div>
+<div class="container_leagues" style="float:left; grid-template-rows: repeat({{ q_league }}, 220px);" id="leagues_all">
+    {% for league_my in leagues %}
+    <button class="league-item" onclick="location.href='/league/{{ league_my.id }}/0'"
+            style="background-color: #DDD; border: 0px; margin: 15px; height: 200px; font-weight: bold;">
+        {% if league_my == league %}
+            <span class="text-log" style="color: rgb(228, 175, 1);">{{ league_my.type }} {{ league_my.level }}</span>
+        {% else %}
+            <span class="text-log" style="color: #000;">{{ league_my.type }} {{ league_my.level }}</span>
+        {% endif %}
+    </button>
+    {% endfor %}
+</div>
+<div style="background-color: #DDD; width: 70%; padding: 3%;
+    padding-top: 2%; float:right; margin-top: 1%; margin-bottom: 2%; border-radius: 10px;
+    padding-bottom: 2%;">
+    <form action="/league/{{ league.id }}/{{ num }}" method="post">
+        <nav>
+            <ul class="pagination pagination-sm" style="float: left;">
                 {% for group in groups %}
-                    {% if loop.index - 1 == num %}
-                      <li class="page-item active" aria-current="page">
-                        <span class="page-link" style="background-color: #36AFAA; border: 1px solid #36AFAA;">
+                {% if loop.index - 1 == num %}
+                <li class="page-item active" aria-current="page">
+                        <span class="page-link" style="background-color: #f8c301; border: 1px solid #f8c301; font-family: 'Arial';">
                             {{ group.name }}</span>
-                      </li>
-                    {% else %}
-                        <li class="page-item">
-                                <a class="page-link" style="color: #36AFAA;"
-                                   href="/league_id/{{ league.id }}/{{ loop.index - 1 }}">
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" style="color: #f8c301; font-family: 'Arial';"
+                       href="/league/{{ league.id }}/{{ loop.index - 1 }}">
                         {{ group.name }}</a></li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <table style="width: 100%;">
+            <tr>
+                <td colspan="9"
+                    style="font-family: 'Arial'; font-weight: bold; font-size: 40px; border: 0px solid #000;">
+                    {{ group.name }}
+                </td>
+            </tr>
+            <tr>
+                <td class="title_td" style="width: 8%;">Номер матча</td>
+                <td class="title_td" style="width: 8%;">Корт</td>
+                <td class="title_td" style="width: 18%;">Команда 1</td>
+                <td class="title_td" style="width: 8%;">VS</td>
+                <td class="title_td" style="width: 18%;">Команда 2</td>
+                <td class="title_td" style="width: 18%;">Судит</td>
+                <td class="title_td" colspan="3" style="width: 22%;">Результат</td>
+            </tr>
+            {% for game in games %}
+            <tr valign="{{ loop.index - 1 }}">
+                <td class="item_td" style="width: 8%; font-weight: bold;">{{ loop.index }}</td>
+                <td class="item_td" style="width: 8%; font-weight: bold;">
+                    {% if current_user.status == 'admin' %}
+                        <input type="text" value="{{ result[loop.index - 1][0] }}" class="redact_input" style="font-weight: bold;"
+                               name="{{ loop.index - 1 }} 0">
+                    {% else %}
+                        {{ result[loop.index - 1][0] }}
                     {% endif %}
-                {% endfor %}
-              </ul>
-            </nav>
-            <button style="float:right;" class="home" name="home">
-                <img src="./../../../static/image/design_image/home.png" style="width: 40px; height: auto;"></button>
-            </div>
-
-            <table style="width: 100%;">
-                <tr>
-                    <td colspan="9" style="background-color: #FFF; font-family: 'Arial'; font-weight: bold; font-size: 40px;">
-                        {{ group.name }}</td>
-                </tr>
-                <tr>
-                    <td class="title_td" style="width: 9%;">Номер матча</td>
-                    <td class="title_td" style="width: 9%;">Корт</td>
-                    <td class="title_td" style="width: 18%;">Команда 1</td>
-                    <td class="title_td" style="width: 9%;">VS</td>
-                    <td class="title_td" style="width: 18%;">Команда 2</td>
-                    <td class="title_td" style="width: 18%;">Судит</td>
-                    <td class="title_td" colspan="3" style="width: 19%;">Результат</td>
-                </tr>
-                {% for game in games %}
-                    <tr>
-                        <td class="item_td" style="width: 9%; font-weight: bold;">{{ loop.index }}</td>
-                        <td class="item_td" style="width: 9%; font-weight: bold;" contenteditable="{{ admin }}">
-                            {{ result[loop.index - 1][0] }}
-                        </td>
-                        <td class="item_td" style="width: 18%;">{{ game[0] }}</td>
-                        <td class="item_td" style="width: 9%; font-weight: bold; color: #F00;">VS</td>
-                        <td class="item_td" style="width: 18%;">{{ game[1] }}</td>
-                        <td class="item_td" style="width: 18%;">{{ game[2] }}</td>
-                        <td class="item_td" style="width: 7%;" contenteditable="{{ admin }}">
-                            {{ result[loop.index - 1][1] }}
-                        </td>
-                        <td class="item_td" style="width: 5%; font-weight: bold;">:</td>
-                        <td class="item_td" style="width: 7%;" contenteditable="{{ admin }}">
-                            {{ result[loop.index - 1][2] }}
-                        </td>
-                    </tr>
-                {% endfor %}
-                <tr>
-                    <td contenteditable="{{ admin }}" colspan="9" style="background-color: #D9D9D9;" class="title_td">
+                </td>
+                <td class="item_td" style="width: 18%;">{{ game[0] }}</td>
+                <td class="item_td" style="width: 8%; font-weight: bold; color: #F00;">VS</td>
+                <td class="item_td" style="width: 18%;">{{ game[1] }}</td>
+                <td class="item_td" style="width: 18%;">{{ game[2] }}</td>
+                <td class="item_td" style="width: 8%;">
+                    {% if current_user.status == 'admin' %}
+                        <input type="text" value="{{ result[loop.index - 1][1] }}" class="redact_input"
+                               name="{{ loop.index - 1 }} 1">
+                    {% else %}
+                        {{ result[loop.index - 1][1] }}
+                    {% endif %}
+                </td>
+                <td class="item_td" style="width: 6%; font-weight: bold;">:</td>
+                <td class="item_td" style="width: 8%;">
+                    {% if current_user.status == 'admin' %}
+                        <input type="text" value="{{ result[loop.index - 1][2] }}" class="redact_input"
+                           name="{{ loop.index - 1 }} 2">
+                    {% else %}
+                        {{ result[loop.index - 1][2] }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="9" style="background-color: #B6B6B6;" class="title_td">
+                    {% if current_user.status == 'admin' %}
+                        <input type="text" value="{{ format }}" class="redact_input" style="background-color: #B6B6B6; font-weight: bold;" name="format">
+                    {% else %}
                         {{ format }}
-                    </td>
-                </tr>
-            </table>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
 
-
-            {% if current_user.status == 'admin' %}
-                <button type="submit" class="btn btn-light"
-                        style="width: 100%; margin-top: 50px;" name="apply">Применить</button>
-                <button type="submit" class="btn btn-warning"
-                        style="width: 100%; margin-top: 10px;" name="name">Завершить</button>
-            {% endif %}
-            </form>
-        </div>
-    </body>
-</html>
+        {% if current_user.status == 'admin' %}
+        <button type="submit" class="btn btn-warning"
+                style="width: 100%; margin-top: 50px; font-family: 'Arial';" name="apply">Применить
+        </button>
+        {% endif %}
+    </form>
+</div>
+</div>
+{% endblock %}

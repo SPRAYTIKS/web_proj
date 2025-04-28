@@ -1,21 +1,3 @@
-
-body {
-  font-family: century;
-  font-weight: bold;font-size: 21px;
-  background-color: rgb(26, 29, 31);
-  color: #f8c301;
-  margin: 0;
-}
-
-header {
-  background-color: #212529;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
 .logo-container {
   display: flex;
   align-items: center;
@@ -45,15 +27,6 @@ header {
   margin: 0 auto;
   display: block;
   width: fit-content;
-}
-
-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: stretch;
-  width: 100%;
 }
 
 nav li {
@@ -311,6 +284,64 @@ td {
     padding-top: 2%;
     padding-bottom: 2%;
 }
+
+td {
+    text-align: center;
+    vertical-align: middle;
+    height: 50px;
+    border: 2px solid #000;
+    color: #000;
+}
+
+.title_td {
+    font-weight: bold;
+    background-color: #999999;
+    font-family: 'Arial';
+    font-size: 20px;
+}
+
+.item_td {
+    background-color: #FFF;
+    font-family: 'Arial';
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.container_leagues {
+    height: 100vh;
+    overflow-y: scroll;
+    width: 25%;
+    display: grid;
+    grid-row-gap: 5px;
+    background-color: rgb(26, 29, 31);
+}
+
+#leagues_all::-webkit-scrollbar {
+    background-color: rgb(26, 29, 31);
+    border-radius: 10px;
+}
+#leagues_all::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: rgb(74, 73, 74);
+}
+
+.redact_input {
+    color: #000;
+    background-color: #FFF;
+    font-family: Arial;
+    text-align: center;
+    border: none;
+    width: 100%;
+}
+
+.redact_input:focus {
+    border: none;
+    outline: none;
+}
+
+
+
+
 
 
 

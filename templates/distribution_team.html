@@ -56,28 +56,25 @@
                       <li class="list-group-item" style="background-color: #999999; color: #000; font-weight: bold;">
                           Группа {{ name_group[loop.index - 1] }}</li>
 
-                      {% if loop.index == 1 %}
-                            {% set q = 0 %}
-                      {% else %}
-                            {% set q = sum(distribution[:loop.index]) %}
-                      {% endif %}
+                      {% set q = sum_d[loop.index - 1] %}
+
                       {% set en = loop.index - 1 %}
                       {% for i in range(group) %}
-                            {% if teams[q + loop.index - 1] in message %}
-                                <select class="form-select" aria-label="Default select example" id="mySelectError"
+                            {% if all_teams[q + loop.index - 1] in message %}
+                                <select class="form-select" aria-label="Default select example" id="{{ en }} {{ i }}"
                                     style="background-color: rgb(255, 255, 255); color: rgb(215, 95, 107); display: flex;
                                     justify-content: center; border: 3px solid #000; border-radius: 0px;" name="{{ en }} {{ i }}">
-                                  <option selected>{{ teams[q + loop.index - 1] }}</option>
-                                  {% for team in all_teams %}
+                                  <option selected>{{ all_teams[q + loop.index - 1] }}</option>
+                                  {% for team in teams %}
                                     <option>{{ team }}</option>
                                   {% endfor %}
                                 </select>
                             {% else %}
-                                <select class="form-select" aria-label="Default select example" id="mySelect"
+                                <select class="form-select" aria-label="Default select example" id="{{en}} {{ i }}"
                                     style="background-color: rgb(255, 255, 255); color: #000; display: flex;
                                     justify-content: center; border: 3px solid #000; border-radius: 0px;" name="{{ en }} {{ i }}">
-                                  <option selected>{{ teams[q + loop.index - 1] }}</option>
-                                  {% for team in all_teams %}
+                                  <option selected>{{ all_teams[q + loop.index - 1] }}</option>
+                                  {% for team in teams %}
                                     <option>{{ team }}</option>
                                   {% endfor %}
                                 </select>

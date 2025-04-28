@@ -46,14 +46,22 @@
 
             </div>
         {% endif %}
-        {% if current_user.id in players_id %}
+        {% if not register_my %}
             <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
                 style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">
-            Вы уже записаны</span></button></p>
+            Регистрация недоступна</span></button></p>
+        {% elif current_user.id in players_id %}
+            <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">
+            Вы уже зарегистрированы</span></button></p>
         {% elif max_team %}
             <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
                 style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">
             Лига заполнена</span></button></p>
+        {% elif not tournament.is_visible %}
+            <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">
+            Лига не видна пользователям</span></button></p>
         {% elif application %}
             <p><button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal"
                 style="height: 40px; width: 100%;" disabled><span style="font-size:1.3rem; font-weight:500; color: #575E65;">

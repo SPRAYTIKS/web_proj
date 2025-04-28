@@ -13,8 +13,7 @@
     </head>
     <body style="background-color: rgb(33, 37, 41);">
         <div style="background-color: rgb(26, 29, 31); width: 60%; padding: 3%;" class="login">
-            <a href="/" class="a_logo" style="margin-left: 20px;">
-                <img src="../static/image/design_image/logo.jpg" class="image_log" style="width: 20%; height: auto;"></a>
+            <button onclick="location.href='/'" class="new-vec" style="margin-left: 20px;"><img src="../static/image/design_image/logo.jpg" class="image_log" style="width: 20%; height: auto;"></button>
             <form action="/create_groups/{{ tournament.id }}" method="post">
             {% for q in q_teams %}
                 {% set en = loop.index %}

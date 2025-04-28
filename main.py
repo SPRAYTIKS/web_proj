@@ -26,7 +26,6 @@ import os
 import shutil
 import datetime
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandex'
 login_m = LoginManager()
@@ -64,7 +63,8 @@ def album():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             images = photo_func()
-            return render_template('album.html', status=current_user.status, images=images, notifications=f, len_notifications=len(f))
+            return render_template('album.html', status=current_user.status, images=images, notifications=f,
+                                   len_notifications=len(f))
     return redirect('/login')
 
 
@@ -132,7 +132,8 @@ def shop():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             shops = shop_func()
-            return render_template('shop.html', status=current_user.status, shops=shops, notifications=f, len_notifications=len(f))
+            return render_template('shop.html', status=current_user.status, shops=shops, notifications=f,
+                                   len_notifications=len(f))
     return redirect('/login')
 
 
@@ -415,6 +416,8 @@ def edit_tournament(id):
         if current_user.status == 'admin':
             db_sess = db_session.create_session()
             tournament = db_sess.query(Tournament).filter(Tournament.id == id).first()
+            if not tournament or tournament.is_finished or tournament.is_started:
+                return redirect('/tournaments')
 
             form = EditTournamentForm(name=tournament.name_tournament, quantity=tournament.league_group_quantity,
                                       start_registration=tournament.start_registration,
@@ -442,7 +445,7 @@ def edit_tournament(id):
                     return render_template('edit_tournament.html', title='Редактировать турнир', form=form,
                                            message='Введите другую дату регистрации!')
 
-                if tournament.type == 'lm' and tournament.quantity > 3:
+                if tournament.type == 'lm' and tournament.league_group_quantity > 3:
                     return render_template('edit_tournament.html', title='Редактировать турнир', form=form,
                                            message='Слишком много лиг!')
 
@@ -683,6 +686,7 @@ def tournaments():
             all_tournaments = db_sess.query(Tournament).filter(Tournament.is_visible == 1).all()[::-1]
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
+            print(f)
         return render_template('tournaments.html', title='Турниры', admin=admin, all_tournaments=all_tournaments,
                                notifications=f, len_notifications=len(f))
     return redirect('/login')
@@ -749,7 +753,7 @@ def create_tournament():
 
                 if tournament.is_visible:
                     name = tournament.name_tournament
-                    link =  f'/tournament_league/{tournament.id}'
+                    link = f'/tournament_league/{tournament.id}'
                     path = f'img_{n}.png'
                     dates = datetime.date.today()
 
@@ -780,7 +784,7 @@ def tournament_league(id):
         if tournament.is_visible or current_user.status == 'admin':
             return render_template('tournament_league.html', title=f'Турнир {tournament.name_tournament}',
                                    tour=tournament, leagues=leagues, q_league=len(leagues), notifications=f,
-                                   len_notifications=len(f))
+                                   len_notifications=len(f), tournament=tournament)
         else:
             return redirect('/tournaments')
 
@@ -794,7 +798,7 @@ def create_league(id):
             f = [i.strip() for i in f.readlines()]
         db_sess = db_session.create_session()
         tournament = db_sess.query(Tournament).filter(Tournament.id == id).first()
-        if current_user.status == 'admin' and tournament:
+        if current_user.status == 'admin' and tournament and not tournament.is_started and not tournament.is_finished:
 
             form = CreateLeagueForm()
             if form.validate_on_submit():
@@ -804,6 +808,7 @@ def create_league(id):
                 leagues = db_sess.query(League).filter(League.is_tournament == tournament.id).all()
                 leagues = [league.type for league in leagues]
                 if type_league in leagues:
+                    print(12)
                     return render_template('create_league.html', title='Создать лигу', form=form, notifications=f,
                                            len_notifications=len(f), tournament=tournament,
                                            messages=f'Категория уже используется в этом турнире!')
@@ -830,15 +835,15 @@ def league_id(id, id_group):
 
         league = db_sess.query(League).filter(League.id == id).first()
         tournament = db_sess.query(Tournament).filter(Tournament.id == league.is_tournament).first()
+        leagues = db_sess.query(League).filter(League.is_tournament == tournament.id).all()
 
         if league and (tournament.is_visible or current_user.status == 'admin'):
             if tournament.is_started or tournament.is_finished:
                 groups = db_sess.query(GroupLeague).filter(GroupLeague.is_league == league.id).all()
                 if groups:
-                    if request.method == 'POST':
-                        if 'home' in request.form:
-                            return redirect(f'/tournament_league/{tournament.id}')
-                    group = groups[0]
+
+                    group = groups[id_group]
+
                     with open(f'./groups/table_format/{group.players_quantity}_team.csv', 'r') as file:
                         games = []
                         for game in file:
@@ -858,6 +863,21 @@ def league_id(id, id_group):
                             games.append([player_1, player_2, referee])
                     admin = 'true' if current_user.status == 'admin' else 'false'
 
+                    if request.method == 'POST':
+                        if 'apply' in request.form:
+                            f = request.form
+                            with open(f'groups/{group.id}.csv', 'w', newline='', encoding="utf8") as csvfile:
+                                writer = csv.writer(
+                                    csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                                for i in range(len(games)):
+                                    ar = []
+                                    for j in range(3):
+                                        r = f[f'{i} {j}']
+                                        ar.append(r)
+                                    print(ar)
+                                    writer.writerow(ar)
+                                writer.writerow([f['format']])
+
                     result = []
                     with open(f'./groups/{group.id}.csv', 'r', encoding='utf-8') as file:
                         file = list(file)
@@ -865,10 +885,11 @@ def league_id(id, id_group):
                             q = q.strip().split(',')
                             result.append(q)
                         format_game = file[-1]
+
                     return render_template('league_start.html', title=f'Лига {league.type} {league.level}',
                                            league=league, group=group, notifications=f, admin=admin, num=id_group,
                                            len_notifications=len(f), groups=groups, games=games, result=result,
-                                           format=format_game)
+                                           format=format_game, leagues=leagues, q_league=len(leagues))
 
                 tournament.is_started = 0
                 tournament.is_finished = 0
@@ -888,6 +909,20 @@ def league_id(id, id_group):
 
                 friends_my = db_sess.query(User).filter(User.id == current_user.id).first().friends.split(', ')
                 friends_my = db_sess.query(User).filter(User.id.in_(friends_my)).all()[1:]
+
+                register_my = True
+                if league.type == 'ММ':
+                    register_my = current_user.gender == 'man'
+                    friends_my = [friend for friend in friends_my if friend.gender == 'man']
+
+                elif league.type == 'ЖЖ':
+                    register_my = current_user.gender == 'woman'
+                    friends_my = [friend for friend in friends_my if friend.gender == 'woman']
+
+                else:
+                    my_gender = current_user.gender
+                    friends_my = [friend for friend in friends_my if friend.gender != my_gender]
+
                 players_id = []
                 if league.players is None:
                     percent = 0
@@ -910,8 +945,8 @@ def league_id(id, id_group):
 
                 return render_template('league_register.html', title=f'Регистрация {league.type} {league.level}',
                                        league=league, team=new_teams, q_team=len(new_teams), notifications=f,
-                                       len_notifications=len(f),
-                                       friends=friends_my, players_id=players_id,
+                                       len_notifications=len(f), tournament=tournament,
+                                       friends=friends_my, players_id=players_id, register_my=register_my,
                                        percent=percent, application=application, max_team=max_team)
 
             return redirect(f'/tournament_league/{tournament.id}')
@@ -1032,8 +1067,7 @@ def distribution_team(id, num_league):
                                  for i in league.team.split()]
                         all_teams = teams[:]
                         if session['ready_league'][num_league]:
-                            teams = session['ready_league'][num_league][:]
-
+                            all_teams = session['ready_league'][num_league][:]
                         if request.method == 'POST':
                             f = request.form
                             if 'name' in f and all(session['ready']):
@@ -1042,6 +1076,7 @@ def distribution_team(id, num_league):
                                         if q == 0:
                                             continue
                                         teams = league[:q]
+                                        qe = q
                                         teams_db = (
                                             db_sess.query(League).filter(League.id == leagues[en].id).first().team)
                                         d_teams = {}
@@ -1082,7 +1117,7 @@ def distribution_team(id, num_league):
                                         dst_path = f'groups'
                                         shutil.move(src_path, dst_path)
 
-                                        league = leagues[q:]
+                                        league = league[qe:]
                                 tournament.is_started = True
                                 db_sess.commit()
                                 return redirect(f'/tournament_league/{tournament.id}')
@@ -1094,16 +1129,17 @@ def distribution_team(id, num_league):
                                     for i in range(group):
                                         r = f[f'{en} {i}']
                                         arr.append(r)
-                                copy_teams = all_teams[:]
+                                copy_teams = teams[:]
                                 repeat_teams = []
                                 for team in arr:
+                                    team = team.strip()
                                     if team in copy_teams:
                                         copy_teams.remove(team)
                                     else:
                                         repeat_teams.append(team)
-                                teams = arr[:]
+                                all_teams = arr[:]
                                 session.modified = True
-                                session['ready_league'][num_league] = teams[:]
+                                session['ready_league'][num_league] = all_teams[:]
                                 if repeat_teams:
                                     session['ready'][num_league] = 0
                                     session['message'][num_league] = repeat_teams
@@ -1111,12 +1147,19 @@ def distribution_team(id, num_league):
                                     session['message'][num_league] = []
                                     session['ready'][num_league] = 1
 
+                        ar_d = []
+                        for en, group in enumerate(session['create_group'][num_league]):
+                            if en == 0:
+                                q = 0
+                            else:
+                                q = sum(session['create_group'][num_league][:en])
+                            ar_d.append(q)
                         return render_template('distribution_team.html', tournament=tournament,
-                                               ready=session['ready'], all_teams=all_teams,
+                                               ready=session['ready'], all_teams=all_teams, teams=teams,
                                                title=f'Распределение команд {league.type} {league.level}',
-                                               leagues=leagues, num=num_league, league_my=league, teams=teams,
+                                               leagues=leagues, num=num_league, league_my=league,
                                                distribution=session['create_group'][num_league], name_group='АБВГДЕЖЗ',
-                                               message=session['message'][num_league])
+                                               message=session['message'][num_league], sum_d=ar_d)
 
         return redirect('/tournaments')
     return redirect('/login')

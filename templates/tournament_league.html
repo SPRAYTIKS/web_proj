@@ -3,7 +3,7 @@
 {% block content %}
 <div class="tournament-container">
   <div class="tournament-grid">
-    {% if tour.league_group_quantity != q_league and current_user.status == 'admin' %}
+    {% if tour.league_group_quantity != q_league and current_user.status == 'admin' and not tournament.is_started and not tournament.is_finished %}
     <button class="league-item" onclick="location.href='/create_league/{{ tour.id }}'"
             style="background-color: #212529; border: 0px;">
         <img src="./../static/image/background_tournament/plus.png" style="width: 50%; height: auto;">
@@ -11,7 +11,7 @@
     {% endif %}
     {% for league in leagues %}
         <button class="league-item" onclick="location.href='/league/{{ league.id }}/0'"
-            style="background-color: #212529; border: 0px;">
+            style="background-color: #212529; border: 0px; font-weight: bold;">
             <span class="text-log">{{ league.type }} {{ league.level }}</span>
         </button>
     {% endfor %}
