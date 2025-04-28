@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if status == 'admin' %}
+    <a href="/shopAdmin" class="admin-button">Загрузить новый товар</a>
+{% endif %}
 <div class="shop-container">
   <div class="shop-card">
     {% for shop in shops %}

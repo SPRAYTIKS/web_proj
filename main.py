@@ -1,12 +1,5 @@
-import array
-import os
-from asyncio import all_tasks
 import csv
-from flask import Flask, render_template, redirect, request, abort, make_response, jsonify, session, flash, url_for
-
-import requests
-from werkzeug.utils import secure_filename
-from pyexpat.errors import messages
+from flask import Flask, render_template, redirect, request, session
 from flask_mail import Mail, Message
 from all_data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -27,11 +20,12 @@ from random import randint
 import datetime as dt
 from os import listdir, mkdir
 from os.path import isfile, join
-import shutil
 import requests
-from functions import shop_func, photo_func
+from functions import shop_func, photo_func, news, tournamets
 import os
 import shutil
+import datetime
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandex'
@@ -44,32 +38,24 @@ app.config['MAIL_USERNAME'] = MY_EMAIL
 app.config['MAIL_PASSWORD'] = MY_PASSWORD
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
-
+listik = []
 mail = Mail(app)
 
 months = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
           'Jul': '07', 'Aug': '08', 'Sept': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}
 
-news_list = [
-    {"title": "Новость 1", "text": "Текст новости 1", "image": "cat_1.jpg", "date": '01.02.2020', 'id': 1},
-    {"title": "Новость 2", "text": "Текст новости 2", "image": "cat_2.jpg", "date": '01.02.2020', 'id': 2},
-]
-
 
 @app.route('/')
 def index():
     if current_user.is_authenticated:
+        news_lest = news()
+        news_lest = news_lest[::-1]
+        tournament = tournamets()
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-            return render_template('index.html', news_list=news_list, notifications=f, len_notifications=len(f))
+            return render_template('index.html', tournament=tournament, news_list=news_lest, notifications=f,
+                                   len_notifications=len(f))
     return redirect('/login')
-
-
-@app.route('/news/<int:id>')
-def news_page():
-    with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
-        f = [i.strip() for i in f.readlines()]
-        return render_template('news_page.html', notifications=f, len_notifications=len(f))
 
 
 @app.route('/album')
@@ -77,10 +63,17 @@ def album():
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-        if current_user.status != 'admin':
             images = photo_func()
-            return render_template('album.html', images=images, notifications=f, len_notifications=len(f))
-        else:
+            return render_template('album.html', status=current_user.status, images=images, notifications=f, len_notifications=len(f))
+    return redirect('/login')
+
+
+@app.route('/albumAdmin')
+def albumAdmin():
+    if current_user.is_authenticated:
+        with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+        if current_user.status == 'admin':
             return render_template('admin_album.html', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
@@ -98,6 +91,17 @@ def save_album():
     main_photo.save(os.path.join(upload_folder, filename))
 
     os.mkdir(path + '/' + album_name + '/' + 'file')
+
+    src_path = f'static/image/album/{album_name}/{filename}'
+    dst_path = f'static/image/news/{filename}'
+    shutil.copy(src_path, dst_path)
+
+    name = album_name
+    link = f'/album'
+    path = filename
+    dates = datetime.date.today()
+    with open('static/files/news.txt', 'a', encoding='utf-8') as f:
+        f.write(f'Создался новый альбом "{name}"*{link}*{path}*{dates}\n')
 
     for file in photos:
         path = 'static/image/cash'
@@ -117,7 +121,8 @@ def photo(photo_id):
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
         images = photo_func()
-        return render_template('photo.html', images_2=images[photo_id - 1]['file'], notifications=f, len_notifications=len(f))
+        return render_template('photo.html', images_2=images[photo_id - 1]['file'], notifications=f,
+                               len_notifications=len(f))
     return redirect('/login')
 
 
@@ -126,10 +131,17 @@ def shop():
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-        if current_user.status != 'admin':
             shops = shop_func()
-            return render_template('shop.html', shops=shops, notifications=f, len_notifications=len(f))
-        else:
+            return render_template('shop.html', status=current_user.status, shops=shops, notifications=f, len_notifications=len(f))
+    return redirect('/login')
+
+
+@app.route('/shopAdmin')
+def shopAdmin():
+    if current_user.is_authenticated:
+        with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
+            f = [i.strip() for i in f.readlines()]
+        if current_user.status == 'admin':
             return render_template('admin_shop.html', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
@@ -143,6 +155,18 @@ def add_product():
     photo.save(os.path.join(upload_folder, photo.filename))
     raz = photo.filename.split('.')
     os.rename(upload_folder + '/' + photo.filename, upload_folder + '/' + name + '_' + price + '.' + raz[1])
+
+    src_path = upload_folder + '/' + name + '_' + price + '.' + raz[1]
+    dst_path = 'static/image/news/' + name + '_' + price + '.' + raz[1]
+    shutil.copy(src_path, dst_path)
+
+    name = name
+    link = f'/shop'
+    path = name + '_' + price + '.' + raz[1]
+    dates = datetime.date.today()
+    with open('static/files/news.txt', 'a', encoding='utf-8') as f:
+        f.write(f'Появился новый товар "{name}"*{link}*{path}*{dates}\n')
+
     return 'Товар добавлен!'
 
 
@@ -163,7 +187,8 @@ def buy(shop_id):
                             f"Цена: {shops[shop_id - 1]['price']}\n"
                 }
                 requests.post(url=url, params=params)
-            return render_template('buy.html', shop=shops[shop_id - 1], email=email, notifications=f, len_notifications=len(f))
+            return render_template('buy.html', shop=shops[shop_id - 1], email=email, notifications=f,
+                                   len_notifications=len(f))
     return redirect('/login')
 
 
@@ -721,6 +746,18 @@ def create_tournament():
                 src_path = f'./static/image/background_tournament/img_{n}.png'
                 dst_path = f'./static/tournaments/{tournament.id}/img.png'
                 shutil.copy(src_path, dst_path)
+
+                if tournament.is_visible:
+                    name = tournament.name_tournament
+                    link =  f'/tournament_league/{tournament.id}'
+                    path = f'img_{n}.png'
+                    dates = datetime.date.today()
+
+                    with open('static/files/news.txt', 'a', encoding='utf-8') as f:
+                        f.write(f'Создался новый турнир "{name}"*{link}*{path}*{dates}\n')
+
+                    with open('static/files/tournament.txt', 'a', encoding='utf-8') as file:
+                        file.write(f'{name}*{dates}*{link}\n')
 
                 return redirect('/tournaments')
 

@@ -6,6 +6,7 @@ def photo_func():
     photo_list = []
     images = []
     main_flies = ''
+    listik = []
     path = './static/image/album'
     files_and_folders = os.listdir(path)
     for item in files_and_folders:
@@ -22,7 +23,6 @@ def photo_func():
         photo_list = []
         kol += 1
         images.append(slovarik)
-    print(images)
     return images
 
 
@@ -39,4 +39,42 @@ def shop_func():
         slovar = {"id": kol, "name": item[0], "price": price[0], "image": item_1}
         kol += 1
         shops.append(slovar)
+
     return shops
+
+
+def news():
+    kol = 3
+    news_list = [
+        {"title": "МЯЧИ MiKASA", "image": "реклама.jpg", "date": '01.02.2020', 'id': 1,
+         'link': '/shop'},
+        {"title": "Золотая серия 2025",
+         "image": "серия.jpg", "date": '01.02.2020', 'id': 2,
+         'link': '/tournaments'},
+    ]
+    with open('static/files/news.txt', 'r', encoding='utf-8') as f:
+        lines = [line for line in f]
+    for x in lines:
+        x = x.split('*')
+        if len(x) != 0:
+            slovar = {"title": x[0],
+             "image": x[2].replace('\n', ''), "date": x[3], 'id': kol,
+             'link': x[1]}
+            news_list.append(slovar)
+            kol += 1
+    return news_list
+
+
+def tournamets():
+    tornument = []
+    with open('static/files/tournament.txt', 'r', encoding='utf-8') as f:
+        lines = [line for line in f]
+    for x in lines:
+        x = x.split('*')
+        if len(x) != 0:
+            slovar = {'time': x[1], 'name': x[0], 'link': x[2]}
+            tornument.append(slovar)
+    return tornument
+
+
+

@@ -13,9 +13,9 @@
   </div>
 </div>
 {% for image in images_2 %}
-<div class="modal" id="photo-modal-{{ loop.index }}">
-  <a href="#" class="modal-close">&times;</a>
-  <div class="modal-content">
+<div class="modal nn" id="photo-modal-{{ loop.index }}">
+  <a href="#" class="modal-close nnnn">&times;</a>
+  <div class="modal-content nnn">
         <img src="{{ url_for('static', filename='image/cash/' + image.filename) }}" alt="Фото товара">
       <a href="#" class="download-button">Загрузить в профиль</a>
   </div>

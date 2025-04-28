@@ -28,6 +28,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  text-decoration: none;
   text-align: left;
 
 }
@@ -42,15 +43,21 @@
 }
 
 .all-matches-button {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: rgb(26, 29, 31);
-  color: #f8c301;
-  cursor: pointer;
-  margin: 10px auto;
-  width: 50%;
+    display: block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background-color: rgb(26, 29, 31);
+    color: #f8c301;
+    margin: 20px auto;
+    width: 60%;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
 }
+
 
 .all-matches-button:hover {
   background-color: rgb(30, 33, 35);
