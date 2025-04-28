@@ -52,7 +52,7 @@ def index():
         tournament = tournamets()
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-            return render_template('index.html', tournament=tournament, news_list=news_lest, notifications=f,
+            return render_template('index.html', title='Главная', tournament=tournament, news_list=news_lest, notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -63,7 +63,7 @@ def album():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             images = photo_func()
-            return render_template('album.html', status=current_user.status, images=images, notifications=f,
+            return render_template('album.html', title='Альбом', status=current_user.status, images=images, notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -74,7 +74,7 @@ def albumAdmin():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
         if current_user.status == 'admin':
-            return render_template('admin_album.html', notifications=f, len_notifications=len(f))
+            return render_template('admin_album.html',  title='Админ_Альбом', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
 
@@ -121,7 +121,7 @@ def photo(photo_id):
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
         images = photo_func()
-        return render_template('photo.html', images_2=images[photo_id - 1]['file'], notifications=f,
+        return render_template('photo.html', title='Фото', images_2=images[photo_id - 1]['file'], notifications=f,
                                len_notifications=len(f))
     return redirect('/login')
 
@@ -132,7 +132,7 @@ def shop():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             shops = shop_func()
-            return render_template('shop.html', status=current_user.status, shops=shops, notifications=f,
+            return render_template('shop.html', title='Товары', status=current_user.status, shops=shops, notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -143,7 +143,7 @@ def shopAdmin():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
         if current_user.status == 'admin':
-            return render_template('admin_shop.html', notifications=f, len_notifications=len(f))
+            return render_template('admin_shop.html', title='Админ_Товары', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
 
@@ -188,7 +188,7 @@ def buy(shop_id):
                             f"Цена: {shops[shop_id - 1]['price']}\n"
                 }
                 requests.post(url=url, params=params)
-            return render_template('buy.html', shop=shops[shop_id - 1], email=email, notifications=f,
+            return render_template('buy.html', title='Покупка', shop=shops[shop_id - 1], email=email, notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
