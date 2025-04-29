@@ -52,7 +52,8 @@ def index():
         tournament = tournamets()
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-            return render_template('index.html', title='Главная', tournament=tournament, news_list=news_lest, notifications=f,
+            return render_template('index.html', title='Главная', tournament=tournament, news_list=news_lest,
+                                   notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -63,7 +64,8 @@ def album():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             images = photo_func()
-            return render_template('album.html', title='Альбом', status=current_user.status, images=images, notifications=f,
+            return render_template('album.html', title='Альбом', status=current_user.status, images=images,
+                                   notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -74,7 +76,7 @@ def albumAdmin():
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
         if current_user.status == 'admin':
-            return render_template('admin_album.html',  title='Админ_Альбом', notifications=f, len_notifications=len(f))
+            return render_template('admin_album.html', title='Админ_Альбом', notifications=f, len_notifications=len(f))
     return redirect('/login')
 
 
@@ -126,13 +128,26 @@ def photo(photo_id):
     return redirect('/login')
 
 
+@app.route('/download_photo/<string:path>')
+def download_photo(path):
+    if current_user.is_authenticated:
+        src_path = f'static/image/cash/{path}'
+        dst_path = f'static/users/{current_user.id}/image_on_profile/'
+        dst_path = f'static/users/{current_user.id}/image_on_profile/img_{len(os.listdir(dst_path)) + 1}.png'
+
+        shutil.copy(src_path, dst_path)
+        return redirect(request.referrer)
+    return redirect('/login')
+
+
 @app.route('/shop')
 def shop():
     if current_user.is_authenticated:
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
             shops = shop_func()
-            return render_template('shop.html', title='Товары', status=current_user.status, shops=shops, notifications=f,
+            return render_template('shop.html', title='Товары', status=current_user.status, shops=shops,
+                                   notifications=f,
                                    len_notifications=len(f))
     return redirect('/login')
 
@@ -686,7 +701,6 @@ def tournaments():
             all_tournaments = db_sess.query(Tournament).filter(Tournament.is_visible == 1).all()[::-1]
         with open(f'./static/users/{current_user.id}/notifications.txt', 'r') as f:
             f = [i.strip() for i in f.readlines()]
-            print(f)
         return render_template('tournaments.html', title='Турниры', admin=admin, all_tournaments=all_tournaments,
                                notifications=f, len_notifications=len(f))
     return redirect('/login')
@@ -808,7 +822,6 @@ def create_league(id):
                 leagues = db_sess.query(League).filter(League.is_tournament == tournament.id).all()
                 leagues = [league.type for league in leagues]
                 if type_league in leagues:
-                    print(12)
                     return render_template('create_league.html', title='Создать лигу', form=form, notifications=f,
                                            len_notifications=len(f), tournament=tournament,
                                            messages=f'Категория уже используется в этом турнире!')
@@ -874,7 +887,6 @@ def league_id(id, id_group):
                                     for j in range(3):
                                         r = f[f'{i} {j}']
                                         ar.append(r)
-                                    print(ar)
                                     writer.writerow(ar)
                                 writer.writerow([f['format']])
 

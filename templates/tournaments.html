@@ -12,11 +12,45 @@
       {% for tour in all_tournaments %}
             <button class="tournament-item" onclick="location.href='/tournament_league/{{ tour.id }}'"
                 style="background-image: url(./../static/tournaments/{{ tour.id }}/img.png); background-size: 100%;">
-                <a href="/edit_tournament/{{ tour.id }}" style="float: right">
-                    <img src="./../static/image/design_image/tocka.png" style="height: 40px;">
-                </a>
+                <div class="hidden-element">
+                    {% if tour.is_register %}
+                        <span style="margin: 10px; float: left; font-size: 25px;">Регистрация открыта</span>
+                    {% elif tour.is_finished %}
+                        <span style="margin: 10px; float: left; font-size: 25px;">Турнир закончен</span>
+                    {% elif tour.is_started %}
+                        <span style="margin: 10px; float: left; font-size: 25px;">Турнир запущен</span>
+                    {% else %}
+                        <span style="margin: 10px; float: left; font-size: 25px;">Пустой турнир</span>
+                    {% endif %}
+                    <div style="float: right; width: 100%; margin-top: 10px; height: 40px;">
+                        {% if current_user.status == 'admin' %}
+                            <a type="submit" href='/edit_tournament/{{ tour.id }}'
+                                    class="btn btn-outline-light" style="width: 90px; float: left; margin-left: 10px; height: 40px;">
+                                Редакт
+                            </a>
+                            <a type="submit" href='/starting_tournament/{{ tour.id }}'
+                                    class="btn btn-outline-light" style="width: 90px; float: right; margin-right: 10px;">
+                                Запуск
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div style="height: 50px; width: 100%;">
+                        <span style="margin-left: 10px; float: left; font-size: 25px; margin-top: 40px;">{{ tour.start_tournament }}</span>
+                        <span style="font-size: 50px; float: right; margin-right: 10px; margin-top: 15px;">
+                            {% if tour.type == 'zs' %}
+                                ЗС
+                            {% else %}
+                                Л/М
+                            {% endif %}</span>
+                    </div>
+               </div>
+                <div style="width: 103%; height: 20%; background-color: #212529; color: #f8c301; display: flex;
+    justify-content: center;
+    align-items: center; margin-left: -6px; margin-top: -10px;">
+                    <span style="font-size: 22px;">{{ tour.name_tournament }}</span></div>
             </button>
       {% endfor %}
+      <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   </div>
 </div>
 {% endblock %}

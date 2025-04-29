@@ -112,36 +112,6 @@ nav li {
   grid-gap: 20px;
 }
 
-.tournament-item {
-  height: 250px;
-  padding: 20px;
-  border-radius: 15px;
-  border: 3px solid #f8c301;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out;
-  margin: 15px;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.tournament-item:hover {
-  transform: scale(1.05);
-}
-
-.tournament-item img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 15px;
-}
-
-.tournament-item p {
-  font-size: 18px;
-  color: #fff;
-  margin-top: 10px;
-  font-weight: bold;
-}
-
 .league-item {
   height: 250px;
   padding: 20px;
@@ -339,6 +309,59 @@ td {
     outline: none;
 }
 
+.tournament-item {
+  height: 250px;
+  border-radius: 15px;
+  border: 3px solid #DDD;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  margin: 15px;
+  margin-left: 10px;
+  margin-right: 10px;
+  text-align: center;
+  cursor: pointer;
+  letter-spacing: 2px;
+  position:relative;
+  overflow:hidden;
+  padding: 0 px;
+}
+
+.tournament-item:hover {
+  transform: scale(1.05);
+}
+
+.tournament-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px;
+}
+
+.tournament-item p {
+  font-size: 18px;
+  color: #fff;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.hidden-element {
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.5s opacity, 0.5s visibility;
+    background-color: #212529;
+    width: 103%;
+    height: 81%;
+    margin-left: -6px;
+    margin-bottom: -10px;
+    border-bottom: 1px solid #DDD;
+}
+
+.tournament-item:hover
+.hidden-element {
+    color: #f8c301;
+    visibility: visible;
+    opacity: 1;
+}
 
 
 

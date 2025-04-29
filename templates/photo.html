@@ -17,7 +17,7 @@
   <a href="#" class="modal-close nnnn">&times;</a>
   <div class="modal-content nnn">
         <img src="{{ url_for('static', filename='image/cash/' + image.filename) }}" alt="Фото товара">
-      <a href="#" class="download-button">Загрузить в профиль</a>
+      <a href="/download_photo/{{ image.filename }}" class="download-button">Загрузить в профиль</a>
   </div>
 </div>
 {% endfor %}
