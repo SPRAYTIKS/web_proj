@@ -5,7 +5,7 @@
 <div class="container_leagues" style="float:left; grid-template-rows: repeat({{ q_league }}, 220px);" id="leagues_all">
     {% for league_my in leagues %}
     <button class="league-item" onclick="location.href='/league/{{ league_my.id }}/0'"
-            style="background-color: #DDD; border: 0px; margin: 15px; height: 200px; font-weight: bold;">
+            style="background-color: #212529; border: 0px; margin: 15px; height: 200px; font-weight: bold;">
         {% if league_my == league %}
             <span class="text-log" style="color: rgb(228, 175, 1);">{{ league_my.type }} {{ league_my.level }}</span>
         {% else %}
